@@ -1,3 +1,15 @@
 {
+    "editor.rulers": [
+        80, 88
+    ],
+    "editor.formatOnSave": true,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "black-formatter.importStrategy": "fromEnvironment",
+    
+      "flake8.args": [
+        "--max-line-length=88"
+    ],
     "workbench.colorCustomizations": {}
 }
