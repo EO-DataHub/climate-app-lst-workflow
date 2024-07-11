@@ -8,12 +8,15 @@ from src.app.get_values_logger import logger
 
 def load_json(json_file: str, latitude_key: str, longitude_key: str):
     logger.info("Loading json file from %s", json_file)
-    with open(json_file, encoding="uft-8") as f:
+    with open(json_file, encoding="utf-8") as f:
         points_data = json.load(f)
+    return points_data
+
+
+def check_json(points_data, latitude_key, longitude_key):
     # raise error if latitude_key or longitude_key not in any of the points
     if not all([latitude_key in point for point in points_data]):
         raise ValueError(f"Key {latitude_key} not found in all points")
-    return points_data, latitude_key, longitude_key
 
 
 def points_to_xr_dataset(points_data, latitude_key, longitude_key):
