@@ -1,0 +1,13 @@
+POST http://127.0.0.1:3000/values
+Accept: application/json
+Content-Type: application/json
+
+{
+  "cog_files": [
+    "s3://ukri-eodh-hazard-tiles-sg2/ESACCI-LST-L2P-LST-LNDST8-LONDON-20220615105845-fv1.00.tif",
+    "s3://ukri-eodh-hazard-tiles-sg2/ESACCI-LST-L2P-LST-LNDST8-LONDON-20220811105254-fv1.00.tif"
+  ],
+  "points": "[{ \"rand_point_id\": 0, \"longitude\": -0.077, \"latitude\": 51.482},{ \"rand_point_id\": 1, \"longitude\": 0.295, \"latitude\": 51.926},{ \"rand_point_id\": 2, \"longitude\": 0.04, \"latitude\": 51.286},{ \"rand_point_id\": 3, \"longitude\": -0.247, \"latitude\": 51.765},{ \"rand_point_id\": 4, \"longitude\": 0.478, \"latitude\": 51.732},{ \"rand_point_id\": 5, \"longitude\": 0.449, \"latitude\": 51.058},{ \"rand_point_id\": 6, \"longitude\": 0.232, \"latitude\": 51.865},{ \"rand_point_id\": 7, \"longitude\": 0.278, \"latitude\": 51.074},{ \"rand_point_id\": 8, \"longitude\": 0.302, \"latitude\": 51.471},{ \"rand_point_id\": 9, \"longitude\": 0.222, \"latitude\": 51.557}]",
+  "latitude_key": "latitude",
+  "longitude_key": "longitude"
+}

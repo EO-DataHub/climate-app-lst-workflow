@@ -3,7 +3,7 @@ import rioxarray as rxr
 import xarray as xr
 from rasterio.session import AWSSession
 
-from src.app.get_values_logger import logger
+from app.get_values_logger import logger
 
 aws_session = AWSSession(aws_unsigned=True)
 

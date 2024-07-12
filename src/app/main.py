@@ -1,9 +1,9 @@
 import json
 
-from src.app.get_values import get_values_from_multiple_cogs, merge_results_into_dict
-from src.app.get_values_logger import logger
-from src.app.load_cogs import load_multiple_cogs
-from src.app.load_points import check_json, points_to_xr_dataset
+from app.get_values import get_values_from_multiple_cogs, merge_results_into_dict
+from app.get_values_logger import logger
+from app.load_cogs import load_multiple_cogs
+from app.load_points import check_json, points_to_xr_dataset
 
 
 def get_data_values(
