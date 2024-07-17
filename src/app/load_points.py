@@ -3,7 +3,7 @@ import json
 import numpy as np
 import xarray as xr
 
-from src.app.get_values_logger import logger
+from app.get_values_logger import logger
 
 
 def load_json(json_file: str, latitude_key: str, longitude_key: str):
