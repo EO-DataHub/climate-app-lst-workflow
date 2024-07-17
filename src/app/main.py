@@ -18,13 +18,15 @@ def get_data_values(
 
 
 def lambda_handler(event, context):
+    logger.info("Received event: %s", json.dumps(event))
     logger.info("Starting lambda function")
-    cog_files = event["cog_files"]
-    points_json = event["points"]
+    body = json.loads(event["body"])
+    cog_files = body.get("cog_files")
+    points_json = body.get("points")
     if points_json:
         points_json = json.loads(points_json)
-    latitude_key = event["latitude_key"]
-    longitude_key = event["longitude_key"]
+    latitude_key = body.get("latitude_key")
+    longitude_key = body.get("longitude_key")
 
     if not all([points_json, cog_files, latitude_key, longitude_key]):
         return {"statusCode": 400, "body": json.dumps("Missing required parameters")}
