@@ -4,12 +4,14 @@ Functions to get values from a cog file
 
 import xarray as xr
 
-from src.app.get_values_logger import logger
+from app.get_values_logger import logger
 
 
 def get_values(ds: xr.DataArray, points: xr.Dataset) -> list:
     logger.info("Getting values from COG file")
     values = ds.sel(x=points.x, y=points.y, method="nearest").values[0].tolist()
+    # replace nan with None
+    values = [None if str(v) == "nan" else v for v in values]
     return {"file_path": ds.attrs["file_path"], "values": values}
 
 

@@ -1,3 +1,6 @@
 -r ./src/requirements.txt
 pre-commit
 pytest
+pystac
+shapely
+ipykernel
