@@ -1,4 +1,4 @@
--r ./src/requirements.txt
+-r ./src/app/requirements.txt
 pre-commit
 pytest
 pystac

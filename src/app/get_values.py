@@ -3,8 +3,7 @@ Functions to get values from a cog file
 """
 
 import xarray as xr
-
-from app.get_values_logger import logger
+from get_values_logger import logger
 
 
 def get_values(ds: xr.DataArray, points: xr.Dataset) -> list:

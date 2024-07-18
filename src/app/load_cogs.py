@@ -5,9 +5,8 @@ Functions to load cog files into a dataset
 import rasterio as rio
 import rioxarray as rxr
 import xarray as xr
+from get_values_logger import logger
 from rasterio.session import AWSSession
-
-from app.get_values_logger import logger
 
 aws_session = AWSSession(aws_unsigned=True)
 
