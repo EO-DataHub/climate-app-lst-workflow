@@ -8,6 +8,17 @@ from app.get_values_logger import logger
 
 
 def get_values(ds: xr.DataArray, points: xr.Dataset) -> list:
+    """
+    Extracts values from a COG file for specified points.
+
+    Parameters:
+    - ds (xr.DataArray): Data array to extract values from.
+    - points (xr.Dataset): Dataset containing points of interest.
+
+    Returns:
+    list: A list containing the file path and extracted values,
+    replacing NaNs with None.
+    """
     logger.info("Getting values from COG file")
     values = ds.sel(x=points.x, y=points.y, method="nearest").values[0].tolist()
     # replace nan with None
@@ -18,6 +29,16 @@ def get_values(ds: xr.DataArray, points: xr.Dataset) -> list:
 def get_values_from_multiple_cogs(
     datasets: list[xr.DataArray], points: xr.Dataset
 ) -> list:
+    """
+    Retrieves values from multiple COG files for given points.
+
+    Parameters:
+    - datasets (list[xr.DataArray]): List of data arrays.
+    - points (xr.Dataset): Dataset of points to extract values for.
+
+    Returns:
+    list: A list of dictionaries with file paths and values.
+    """
     logger.info("Getting values from multiple COG files")
     return_values = []
     for ds in datasets:
@@ -26,6 +47,16 @@ def get_values_from_multiple_cogs(
 
 
 def merge_results_into_dict(results_list: list, request_json: dict) -> dict:
+    """
+    Merges extracted values into the original request JSON.
+
+    Parameters:
+    - results_list (list): List of dicts with file paths and values.
+    - request_json (dict): Original request JSON to merge results into.
+
+    Returns:
+    dict: The updated request JSON with merged results.
+    """
     for file_info in results_list:
         file_values = file_info["values"]
         file_path = file_info["file_path"]

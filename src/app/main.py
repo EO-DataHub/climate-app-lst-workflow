@@ -1,3 +1,7 @@
+"""
+Main starting point for the Lambda function.
+"""
+
 import json
 
 from app.get_values import get_values_from_multiple_cogs, merge_results_into_dict
@@ -10,6 +14,24 @@ from app.stac_parsing import get_cog_urls
 def get_data_values(
     stac_items: list[str], points_json: dict, latitude_key: str, longitude_key: str
 ):
+    """
+    Fetches data values for given points from STAC items.
+
+    This function retrieves Cloud Optimized GeoTIFF (COG) URLs
+    from the provided STAC items, loads the COGs, and extracts
+    data values at specified points. The results are merged into
+    a dictionary structure and returned.
+
+    Parameters:
+    - stac_items (list[str]): List of STAC item URLs.
+    - points_json (dict): JSON object containing points.
+    - latitude_key (str): Key for latitude in points_json.
+    - longitude_key (str): Key for longitude in points_json.
+
+    Returns:
+    dict: A dictionary with the merged results of data values
+    for the provided points.
+    """
     cog_item_urls = get_cog_urls(stac_items)
     cog_dss = load_multiple_cogs(cog_item_urls)
     check_json(points_json, latitude_key, longitude_key)
@@ -19,7 +41,23 @@ def get_data_values(
     return return_json
 
 
-def lambda_handler(event, context):
+def lambda_handler(event, _):
+    """
+    Handles incoming requests to the Lambda function.
+
+    This function processes events by extracting necessary
+    parameters from the event body, validates them, and then
+    calls `get_data_values` to fetch data values for given
+    points from STAC items.
+
+    Parameters:
+    - event (dict): The event dict containing the request body.
+    - context: The context in which the Lambda function is called.
+
+    Returns:
+    dict: A dictionary with either the fetched data values or
+    an error message and corresponding HTTP status code.
+    """
     logger.info("Received event: %s", json.dumps(event))
     logger.info("Starting lambda function")
     body = json.loads(event["body"])

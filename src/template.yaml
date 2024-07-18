@@ -7,7 +7,7 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 60
+    Timeout: 600
 
 Resources:
   GetValuesFunction:

@@ -14,19 +14,39 @@ Content-Type: application/json
 
 ###
 
-POST https://hjbphasm1i.execute-api.eu-west-1.amazonaws.com/Prod/values
+POST {{base_url}}values
 Accept: application/json
 Content-Type: application/json
 
 {
-  "cog_files": ["s3://lst-cogs/london/ESACCI-LST-L2P-LST-LNDST8-LONDON-20220710105237-fv1.00.tif",
-"s3://lst-cogs/london/ESACCI-LST-L2P-LST-LNDST8-LONDON-20220811105254-fv1.00.tif",
-"s3://lst-cogs/london/ESACCI-LST-L2P-LST-LNDST8-LONDON-20180917105201-fv1.00.tif",
-"s3://lst-cogs/london/ESACCI-LST-L2P-LST-LNDST8-LONDON-20220421105212-fv1.00.tif",
-"s3://lst-cogs/london/ESACCI-LST-L2P-LST-LNDST8-LONDON-20150418105146-fv1.00.tif",
-"s3://lst-cogs/london/ESACCI-LST-L2P-LST-LNDST8-LONDON-20210723105222-fv1.00.tif",
-"s3://lst-cogs/london/ESACCI-LST-L2P-LST-LNDST8-LONDON-20220615105845-fv1.00.tif"],
+  "stac_items": ["s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130419110022-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130428105409-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130428105433-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130505110023-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130514105421-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130523104815-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130523104839-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130606110036-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130608104814-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130608104838-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130615105422-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130615105445-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130701105422-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130701105445-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130708110010-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130708110034-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130708110057-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130710104812-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130710104836-fv1.00.json",
+"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130724110008-fv1.00.json"],
   "points": "[{ \"rand_point_id\": 0, \"longitude\": -0.077, \"latitude\": 51.482},{ \"rand_point_id\": 1, \"longitude\": 0.295, \"latitude\": 51.926},{ \"rand_point_id\": 2, \"longitude\": 0.04, \"latitude\": 51.286},{ \"rand_point_id\": 3, \"longitude\": -0.247, \"latitude\": 51.765},{ \"rand_point_id\": 4, \"longitude\": 0.478, \"latitude\": 51.732},{ \"rand_point_id\": 5, \"longitude\": 0.449, \"latitude\": 51.058},{ \"rand_point_id\": 6, \"longitude\": 0.232, \"latitude\": 51.865},{ \"rand_point_id\": 7, \"longitude\": 0.278, \"latitude\": 51.074},{ \"rand_point_id\": 8, \"longitude\": 0.302, \"latitude\": 51.471},{ \"rand_point_id\": 9, \"longitude\": 0.222, \"latitude\": 51.557}]",
   "latitude_key": "latitude",
   "longitude_key": "longitude"
 }
+
+###
+POST {{base_url}}values
+Accept: application/json
+Content-Type: application/json
+
+< notebooks/input_all.json
