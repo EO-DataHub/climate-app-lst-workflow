@@ -6,8 +6,7 @@ import json
 
 import numpy as np
 import xarray as xr
-
-from app.get_values_logger import logger
+from get_values_logger import logger
 
 
 def load_json(json_file: str) -> dict:

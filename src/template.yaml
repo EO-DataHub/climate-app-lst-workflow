@@ -13,8 +13,8 @@ Resources:
   GetValuesFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./
-      Handler: app.main.lambda_handler
+      CodeUri: ./app
+      Handler: main.lambda_handler
       Runtime: python3.11
       Architectures:
         - x86_64

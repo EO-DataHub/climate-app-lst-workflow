@@ -3,11 +3,11 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "stac_items": [
+  "stac_items":[
     "s3://lst-cogs/catalog/lst_images/2022/ESACCI-LST-L2P-LST-LNDST8-LONDON-20220710105237-fv1.00.json",
     "s3://lst-cogs/catalog/lst_images/2015/ESACCI-LST-L2P-LST-LNDST8-LONDON-20150119105810-fv1.00.json"
-  ],
-  "points": "[{ \"rand_point_id\": 0, \"longitude\": -0.077, \"latitude\": 51.482},{ \"rand_point_id\": 1, \"longitude\": 0.295, \"latitude\": 51.926},{ \"rand_point_id\": 2, \"longitude\": 0.04, \"latitude\": 51.286},{ \"rand_point_id\": 3, \"longitude\": -0.247, \"latitude\": 51.765},{ \"rand_point_id\": 4, \"longitude\": 0.478, \"latitude\": 51.732},{ \"rand_point_id\": 5, \"longitude\": 0.449, \"latitude\": 51.058},{ \"rand_point_id\": 6, \"longitude\": 0.232, \"latitude\": 51.865},{ \"rand_point_id\": 7, \"longitude\": 0.278, \"latitude\": 51.074},{ \"rand_point_id\": 8, \"longitude\": 0.302, \"latitude\": 51.471},{ \"rand_point_id\": 9, \"longitude\": 0.222, \"latitude\": 51.557}]",
+  ] ,
+  "points_json": "[{ \"rand_point_id\": 0, \"longitude\": -0.077, \"latitude\": 51.482},{ \"rand_point_id\": 1, \"longitude\": 0.295, \"latitude\": 51.926},{ \"rand_point_id\": 2, \"longitude\": 0.04, \"latitude\": 51.286},{ \"rand_point_id\": 3, \"longitude\": -0.247, \"latitude\": 51.765},{ \"rand_point_id\": 4, \"longitude\": 0.478, \"latitude\": 51.732},{ \"rand_point_id\": 5, \"longitude\": 0.449, \"latitude\": 51.058},{ \"rand_point_id\": 6, \"longitude\": 0.232, \"latitude\": 51.865},{ \"rand_point_id\": 7, \"longitude\": 0.278, \"latitude\": 51.074},{ \"rand_point_id\": 8, \"longitude\": 0.302, \"latitude\": 51.471},{ \"rand_point_id\": 9, \"longitude\": 0.222, \"latitude\": 51.557}]",
   "latitude_key": "latitude",
   "longitude_key": "longitude"
 }
@@ -39,7 +39,7 @@ Content-Type: application/json
 "s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130710104812-fv1.00.json",
 "s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130710104836-fv1.00.json",
 "s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130724110008-fv1.00.json"],
-  "points": "[{ \"rand_point_id\": 0, \"longitude\": -0.077, \"latitude\": 51.482},{ \"rand_point_id\": 1, \"longitude\": 0.295, \"latitude\": 51.926},{ \"rand_point_id\": 2, \"longitude\": 0.04, \"latitude\": 51.286},{ \"rand_point_id\": 3, \"longitude\": -0.247, \"latitude\": 51.765},{ \"rand_point_id\": 4, \"longitude\": 0.478, \"latitude\": 51.732},{ \"rand_point_id\": 5, \"longitude\": 0.449, \"latitude\": 51.058},{ \"rand_point_id\": 6, \"longitude\": 0.232, \"latitude\": 51.865},{ \"rand_point_id\": 7, \"longitude\": 0.278, \"latitude\": 51.074},{ \"rand_point_id\": 8, \"longitude\": 0.302, \"latitude\": 51.471},{ \"rand_point_id\": 9, \"longitude\": 0.222, \"latitude\": 51.557}]",
+  "points_json": "[{ \"rand_point_id\": 0, \"longitude\": -0.077, \"latitude\": 51.482},{ \"rand_point_id\": 1, \"longitude\": 0.295, \"latitude\": 51.926},{ \"rand_point_id\": 2, \"longitude\": 0.04, \"latitude\": 51.286},{ \"rand_point_id\": 3, \"longitude\": -0.247, \"latitude\": 51.765},{ \"rand_point_id\": 4, \"longitude\": 0.478, \"latitude\": 51.732},{ \"rand_point_id\": 5, \"longitude\": 0.449, \"latitude\": 51.058},{ \"rand_point_id\": 6, \"longitude\": 0.232, \"latitude\": 51.865},{ \"rand_point_id\": 7, \"longitude\": 0.278, \"latitude\": 51.074},{ \"rand_point_id\": 8, \"longitude\": 0.302, \"latitude\": 51.471},{ \"rand_point_id\": 9, \"longitude\": 0.222, \"latitude\": 51.557}]",
   "latitude_key": "latitude",
   "longitude_key": "longitude"
 }
