@@ -1,0 +1,46 @@
+@scheme = https
+@ades = test.eodatahub.org.uk/ades
+@username=eric
+@workspace = eric-workspace
+
+@deployStatus = {{deployProcessJson.response.headers.Location}}
+
+@processName=get-asset-values-workflow
+
+
+###
+
+# @name listProcesses
+GET {{scheme}}://{{ades}}/{{username}}/ogc-api/processes HTTP/1.1
+Authorization: Basic {{logindetails}}
+Accept: application/json
+
+###
+
+# @name deleteProcess
+DELETE {{scheme}}://{{ades}}/{{username}}/ogc-api/processes/{{processName}} HTTP/1.1
+Authorization: Basic {{logindetails}}
+Accept: application/json
+
+###
+
+
+# @name deployProcessJson
+POST {{scheme}}://{{ades}}/{{username}}/ogc-api/processes HTTP/1.1
+Authorization: Basic {{logindetails}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "executionUnit": {
+    "href": "https://gist.githubusercontent.com/geodowd/8249a50112d2ea90e8c08df19487fa2c/raw/2e82fe9a03fd5cd29ac3e78483f900d9f9dea287/get_asset_values.cwl",
+    "type": "application/cwl"
+  }
+}
+
+###
+
+# @name getProcessDetails
+GET {{scheme}}://{{ades}}/{{username}}/ogc-api/processes/{{processName}} HTTP/1.1
+Authorization: Basic {{logindetails}}
+Accept: application/json

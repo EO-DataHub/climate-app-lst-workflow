@@ -1,3 +1,11 @@
+@workspace = ddowding
+@executeStatus = {{executeProcess.response.headers.Location}}
+@processName = get-asset-values-workflow
+@jobID = {{getExecuteStatus.response.body.jobID}}
+
+
+###
+# @name call_api_2stac
 POST {{base_url}}values
 Accept: application/json
 Content-Type: application/json
@@ -13,6 +21,8 @@ Content-Type: application/json
 }
 
 ###
+
+# @name call_api_20stac
 
 POST {{base_url}}values
 Accept: application/json
@@ -45,8 +55,38 @@ Content-Type: application/json
 }
 
 ###
+
+# @name call_api_all_stac
 POST {{base_url}}values
 Accept: application/json
 Content-Type: application/json
 
 < notebooks/input_all.json
+
+###
+
+# @name executeProcess
+POST https://test.eodatahub.org.uk/ades/eric/ogc-api/processes/{{processName}}/execution HTTP/1.1
+Authorization: Basic {{logindetails}}
+Accept: application/json
+Content-Type: application/json
+Prefer: respond-async
+
+< notebooks/input_workflow.json
+
+###
+
+# @name getExecuteStatus
+GET {{executeStatus}} HTTP/1.1
+Authorization: Basic {{logindetails}}
+Accept: application/json
+
+###
+
+
+# @name getResults
+GET https://{{workspace}}.workspaces.test.eodhp.eco-ke-staging.com/files/eodhp-test-workspaces1/processing-results/cat_{{jobID}}.json HTTP/1.1
+Authorization: Bearer {{token}}
+Accept: application/json
+
+
