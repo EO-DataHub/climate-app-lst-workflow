@@ -18,15 +18,56 @@ A list of stac items for which to get values from.
 
 ### points_json
 
-A json list of latitudes and longitudes.
+GeoJSON list of latitudes and longitudes.
 
-```text
-"[{ \"rand_point_id\": 0, \"longitude\": -0.077, \"latitude\": 51.482},{ \"rand_point_id\": 1, \"longitude\": 0.295, \"latitude\": 51.926},{ \"rand_point_id\": 2, \"longitude\": 0.04, \"latitude\": 51.286},{ \"rand_point_id\": 3, \"longitude\": -0.247, \"latitude\": 51.765},{ \"rand_point_id\": 4, \"longitude\": 0.478, \"latitude\": 51.732},{ \"rand_point_id\": 5, \"longitude\": 0.449, \"latitude\": 51.058},{ \"rand_point_id\": 6, \"longitude\": 0.232, \"latitude\": 51.865},{ \"rand_point_id\": 7, \"longitude\": 0.278, \"latitude\": 51.074},{ \"rand_point_id\": 8, \"longitude\": 0.302, \"latitude\": 51.471},{ \"rand_point_id\": 9, \"longitude\": 0.222, \"latitude\": 51.557}]"
+```json
+{
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                        -0.077,
+                        51.482
+                    ]
+                },
+                "properties": {
+                    "rand_point_id": 0
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                        0.295,
+                        51.926
+                    ]
+                },
+                "properties": {
+                    "rand_point_id": 1
+                }
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                        0.04,
+                        51.286
+                    ]
+                },
+                "properties": {
+                    "rand_point_id": 2
+                }
+            }
+        ]
+    }
+}
 ```
 
-### latitude_key & longitude_key
-
-By default 'latitude' and 'longitude' are the keys in the points_json for latitude and longitude. If the keys are different then these need to be added.
 
 ## Running in workflow
 
@@ -36,9 +77,7 @@ Send a `post` request to `https://test.eodatahub.org.uk/ades/eric/ogc-api/proces
 {
     "inputs": {
         "workspace": "ddowding",
-        "latitude_key": "latitude",
-        "longitude_key": "longitude",
-        "points_json": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-0.077,51.482]},\"properties\":{\"rand_point_id\":0}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.295,51.926]},\"properties\":{\"rand_point_id\":1}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.04,51.286]},\"properties\":{\"rand_point_id\":2}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-0.247,51.765]},\"properties\":{\"rand_point_id\":3}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.478,51.732]},\"properties\":{\"rand_point_id\":4}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.449,51.058]},\"properties\":{\"rand_point_id\":5}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.232,51.865]},\"properties\":{\"rand_point_id\":6}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.278,51.074]},\"properties\":{\"rand_point_id\":7}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.302,51.471]},\"properties\":{\"rand_point_id\":8}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.222,51.557]},\"properties\":{\"rand_point_id\":9}}]}",
+        "points_json": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-0.077,51.482]},\"properties\":{\"rand_point_id\":0}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.295,51.926]},\"properties\":{\"rand_point_id\":1}}]}",
         "stac_items": "[\"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130419110022-fv1.00.json\",\"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130428105409-fv1.00.json\",\"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130428105433-fv1.00.json\"]"
     }
 }
@@ -56,8 +95,40 @@ Send a `POST` request to `https://hjbphasm1i.execute-api.eu-west-1.amazonaws.com
     "s3://lst-cogs/catalog/lst_images/2022/ESACCI-LST-L2P-LST-LNDST8-LONDON-20220710105237-fv1.00.json",
     "s3://lst-cogs/catalog/lst_images/2015/ESACCI-LST-L2P-LST-LNDST8-LONDON-20150119105810-fv1.00.json"
   ] ,
-  "points_json": "[{ \"rand_point_id\": 0, \"longitude\": -0.077, \"latitude\": 51.482},{ \"rand_point_id\": 1, \"longitude\": 0.295, \"latitude\": 51.926},{ \"rand_point_id\": 2, \"longitude\": 0.04, \"latitude\": 51.286},{ \"rand_point_id\": 3, \"longitude\": -0.247, \"latitude\": 51.765},{ \"rand_point_id\": 4, \"longitude\": 0.478, \"latitude\": 51.732},{ \"rand_point_id\": 5, \"longitude\": 0.449, \"latitude\": 51.058},{ \"rand_point_id\": 6, \"longitude\": 0.232, \"latitude\": 51.865},{ \"rand_point_id\": 7, \"longitude\": 0.278, \"latitude\": 51.074},{ \"rand_point_id\": 8, \"longitude\": 0.302, \"latitude\": 51.471},{ \"rand_point_id\": 9, \"longitude\": 0.222, \"latitude\": 51.557}]",
-  "latitude_key": "latitude",
-  "longitude_key": "longitude"
+  "points_json":{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -0.077,
+                    51.482
+                ]
+            },
+            "properties": {
+                "rand_point_id": 0
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    0.295,
+                    51.926
+                ]
+            },
+            "properties": {
+                "rand_point_id": 1
+            }
+        }
+    ]
+},
 }
 ```
+
+## Running locally
+
+You can create a fastapi endpoint by go to the `src/app` folder and running `uvicorn local_api:app --reload`. You can then send the same type of request to `http://127.0.0.1:8000` as to the lambda.
