@@ -1,3 +1,8 @@
+"""
+Provides functions for parsing STAC (SpatioTemporal Asset Catalog) items,
+retrieving specific assets such as COG (Cloud Optimized GeoTIFF) URLs.
+"""
+
 import json
 
 import fsspec

@@ -25,7 +25,7 @@ def get_values(ds: xr.DataArray, points: xr.Dataset) -> list:
         points_transformed = points
     else:
         transformer = Transformer.from_crs("EPSG:4326", ds_crs, always_xy=True)
-        x_t, y_t = transformer.transform(points.x, points.y)
+        x_t, y_t = transformer.transform(points.x, points.y)  # pylint: disable=E0633
         points_transformed = xr.Dataset(
             {"x": (["points"], x_t), "y": (["points"], y_t)},
         )
@@ -65,14 +65,17 @@ def merge_results_into_dict(results_list: list, request_json: dict) -> dict:
 
     Parameters:
     - results_list (list): List of dicts with file paths and values.
-    - request_json (dict): Original request JSON to merge results into.
+    - request_json (dict): Original request GeoJSON to merge results into.
 
     Returns:
     dict: The updated request JSON with merged results.
     """
+    for feature in request_json["features"]:
+        feature["properties"]["returned_values"] = {}
+
     for file_info in results_list:
-        file_values = file_info["values"]
-        file_path = file_info["file_path"]
-        for index, value in enumerate(file_values):
-            request_json[index][file_path] = value
+        for index, value in enumerate(file_info["values"]):
+            request_json["features"][index]["properties"]["returned_values"][
+                file_info["file_path"]
+            ] = value
     return request_json
