@@ -14,12 +14,6 @@ $graph:
       stac_items:
         type: string
         doc: STAC item URLs
-      latitude_key:
-        type: string
-        doc: Key for latitude in points JSON
-      longitude_key:
-        type: string
-        doc: Key for longitude in points JSON
     outputs:
       - id: asset-result
         type: Directory
@@ -31,8 +25,6 @@ $graph:
         in:
           points_json: points_json
           stac_items: stac_items
-          latitude_key: latitude_key
-          longitude_key: longitude_key
         out:
           - asset-result
   - class: CommandLineTool
@@ -54,18 +46,6 @@ $graph:
             type: string
             inputBinding:
                 prefix: --stac_items=
-                separate: false
-                position: 4
-        latitude_key:
-            type: string
-            inputBinding:
-                prefix: --latitude_key=
-                separate: false
-                position: 4
-        longitude_key:
-            type: string
-            inputBinding:
-                prefix: --longitude_key=
                 separate: false
                 position: 4
     outputs:

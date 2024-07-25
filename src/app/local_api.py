@@ -4,36 +4,46 @@ FastAPI app for local API
 
 from fastapi import FastAPI, HTTPException
 from main import get_data_values
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 app = FastAPI()
 
 
-class Point(BaseModel):
-    latitude: float = Field(..., alias="lat")
-    longitude: float = Field(..., alias="lon")
+class GetValuesInput(BaseModel):
+    """
+    Defines input schema for fetching data values.
 
+    Attributes:
+        stac_items (list[str]): List of STAC item IDs.
+        points_json (dict): GeoJSON object with points.
+    """
 
-class PointsInput(BaseModel):
-    points: list[dict]
-    latitude_key: str
-    longitude_key: str
-
-
-class StacItemsInput(BaseModel):
     stac_items: list[str]
+    points_json: dict
 
 
 @app.post("/get-data-values/")
-async def get_data_values_endpoint(
-    stac_items_input: StacItemsInput, points_input: PointsInput
-):
+async def get_data_values_endpoint(input_json: GetValuesInput):
+    """
+    Endpoint to retrieve data values for given STAC items and points.
+
+    This endpoint processes a request containing STAC items and
+    geographic points, returning the corresponding data values.
+
+    Args:
+        input_json (getValuesInput): Input containing STAC items and
+                                     points in GeoJSON format.
+
+    Returns:
+        The data values retrieved for the specified STAC items and
+        points.
+
+    Raises:
+        HTTPException: An error occurred processing the request.
+    """
     try:
         result = get_data_values(
-            stac_items=stac_items_input.stac_items,
-            points_json=points_input.points,
-            latitude_key=points_input.latitude_key,
-            longitude_key=points_input.longitude_key,
+            stac_items=input_json.stac_items, points_json=input_json.points_json
         )
         return result
     except Exception as e:
