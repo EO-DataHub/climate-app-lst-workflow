@@ -5,6 +5,7 @@ Functions to get values from a cog file
 import xarray as xr
 from get_values_logger import logger
 from pyproj import Transformer
+from shortuuid import ShortUUID
 
 
 def get_values(ds: xr.DataArray, points: xr.Dataset) -> list:
@@ -71,6 +72,9 @@ def merge_results_into_dict(results_list: list, request_json: dict) -> dict:
     dict: The updated request JSON with merged results.
     """
     for feature in request_json["features"]:
+        if "id" in feature["properties"]:
+            feature["properties"]["original_id"] = feature["properties"]["id"]
+        feature["properties"]["id"] = ShortUUID().random(length=8)
         feature["properties"]["returned_values"] = {}
 
     for file_info in results_list:

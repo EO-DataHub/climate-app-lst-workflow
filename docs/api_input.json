@@ -16,7 +16,7 @@
                     ]
                 },
                 "properties": {
-                    "rand_point_id": 0
+                    "id": 0
                 }
             },
             {
@@ -29,7 +29,7 @@
                     ]
                 },
                 "properties": {
-                    "rand_point_id": 1
+                    "id": 1
                 }
             },
             {
@@ -42,7 +42,7 @@
                     ]
                 },
                 "properties": {
-                    "rand_point_id": 2
+                    "id": 2
                 }
             },
             {
@@ -55,7 +55,7 @@
                     ]
                 },
                 "properties": {
-                    "rand_point_id": 3
+                    "id": 3
                 }
             },
             {
@@ -68,7 +68,7 @@
                     ]
                 },
                 "properties": {
-                    "rand_point_id": 4
+                    "id": 4
                 }
             },
             {
@@ -81,7 +81,7 @@
                     ]
                 },
                 "properties": {
-                    "rand_point_id": 5
+                    "id": 5
                 }
             },
             {
@@ -94,7 +94,7 @@
                     ]
                 },
                 "properties": {
-                    "rand_point_id": 6
+                    "id": 6
                 }
             },
             {
@@ -107,7 +107,7 @@
                     ]
                 },
                 "properties": {
-                    "rand_point_id": 7
+                    "id": 7
                 }
             },
             {
@@ -120,7 +120,7 @@
                     ]
                 },
                 "properties": {
-                    "rand_point_id": 8
+                    "id": 8
                 }
             },
             {
@@ -133,7 +133,7 @@
                     ]
                 },
                 "properties": {
-                    "rand_point_id": 9
+                    "id": 9
                 }
             }
         ]

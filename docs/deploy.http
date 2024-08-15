@@ -33,7 +33,7 @@ Content-Type: application/json
 
 {
   "executionUnit": {
-    "href": "https://gist.githubusercontent.com/geodowd/8249a50112d2ea90e8c08df19487fa2c/raw/2e82fe9a03fd5cd29ac3e78483f900d9f9dea287/get_asset_values.cwl",
+    "href": "https://raw.githubusercontent.com/sparkgeo/get-asset-values/main/get_asset_values.cwl",
     "type": "application/cwl"
   }
 }

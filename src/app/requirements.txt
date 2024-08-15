@@ -3,3 +3,4 @@ xarray
 rioxarray
 fsspec
 s3fs
+shortuuid
