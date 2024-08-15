@@ -11,6 +11,7 @@
 POST {{base_url}}/get-data-values/
 Accept: application/json
 Content-Type: application/json
+Connection: keep-alive
 
 < api_input.json
 

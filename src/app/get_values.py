@@ -2,6 +2,8 @@
 Functions to get values from a cog file
 """
 
+from pathlib import Path
+
 import xarray as xr
 from get_values_logger import logger
 from pyproj import Transformer
@@ -37,7 +39,8 @@ def get_values(ds: xr.DataArray, points: xr.Dataset) -> list:
     )
     # replace nan with None
     values = [None if str(v) == "nan" else v for v in values]
-    return {"file_path": ds.attrs["file_path"], "values": values}
+    source_file_name = Path(ds.attrs["file_path"]).stem
+    return {"file_path": source_file_name, "values": values}
 
 
 def get_values_from_multiple_cogs(
