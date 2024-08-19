@@ -40,6 +40,7 @@ def get_values(ds: xr.DataArray, points: xr.Dataset) -> list:
     # replace nan with None
     values = [None if str(v) == "nan" else v for v in values]
     source_file_name = Path(ds.attrs["file_path"]).stem
+    source_file_name = source_file_name.replace(".", "-")
     return {"file_path": source_file_name, "values": values}
 
 
