@@ -11,7 +11,7 @@ log_format = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messa
 
 
 # add a file handler
-file_handler = logging.FileHandler("app.log")
+file_handler = logging.FileHandler("/tmp/app.log")
 
 file_handler.setFormatter(log_format)
 
