@@ -1,25 +1,32 @@
+
+
 @scheme = https
 @ades = test.eodatahub.org.uk/ades
-@username=eric
-@workspace = eric-workspace
+@username=sparkgeouser
+@workspace = sparkgeouser
 
 @deployStatus = {{deployProcessJson.response.headers.Location}}
+@executeStatus = {{executeProcess.response.headers.Location}}
 
-@processName=get-asset-values-workflow
+@jobid = {{getExecuteStatus.response.body.jobID}}
+
+@processName = get-asset-values-workflow-sparkgeouser
+
+
 
 
 ###
 
 # @name listProcesses
 GET {{scheme}}://{{ades}}/{{username}}/ogc-api/processes HTTP/1.1
-Authorization: Basic {{logindetails}}
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ###
 
 # @name deleteProcess
 DELETE {{scheme}}://{{ades}}/{{username}}/ogc-api/processes/{{processName}} HTTP/1.1
-Authorization: Basic {{logindetails}}
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ###
@@ -27,13 +34,13 @@ Accept: application/json
 
 # @name deployProcessJson
 POST {{scheme}}://{{ades}}/{{username}}/ogc-api/processes HTTP/1.1
-Authorization: Basic {{logindetails}}
+Authorization: Bearer {{token}}
 Accept: application/json
 Content-Type: application/json
 
 {
   "executionUnit": {
-    "href": "https://raw.githubusercontent.com/sparkgeo/get-asset-values/main/get_asset_values.cwl",
+    "href": "https://gist.githubusercontent.com/geodowd/9549cb31641db5f306c0dc68694dcc6d/raw/43c85fdd526982574c78cd50a6a5a0d5f151bd2b/getassetvalues.cwl",
     "type": "application/cwl"
   }
 }
@@ -42,5 +49,5 @@ Content-Type: application/json
 
 # @name getProcessDetails
 GET {{scheme}}://{{ades}}/{{username}}/ogc-api/processes/{{processName}} HTTP/1.1
-Authorization: Basic {{logindetails}}
+Authorization: Bearer {{token}}
 Accept: application/json

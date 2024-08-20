@@ -1,7 +1,17 @@
-@workspace = ddowding
+
+
+@scheme = https
+@ades = test.eodatahub.org.uk/ades
+@username=sparkgeouser
+@workspace = sparkgeouser
+
+@deployStatus = {{deployProcessJson.response.headers.Location}}
 @executeStatus = {{executeProcess.response.headers.Location}}
-@processName = get-asset-values-workflow
-@jobID = {{getExecuteStatus.response.body.jobID}}
+
+@jobid = {{getExecuteStatus.response.body.jobID}}
+
+@processName = get-asset-values-workflow-sparkgeouser
+
 
 
 ###
@@ -27,8 +37,8 @@ Content-Type: application/json
 ###
 
 # @name executeProcess
-POST https://test.eodatahub.org.uk/ades/eric/ogc-api/processes/{{processName}}/execution HTTP/1.1
-Authorization: Basic {{logindetails}}
+POST https://test.eodatahub.org.uk/ades/{{workspace}}/ogc-api/processes/{{processName}}/execution HTTP/1.1
+Authorization: Bearer {{token}}
 Accept: application/json
 Content-Type: application/json
 Prefer: respond-async
@@ -39,7 +49,7 @@ Prefer: respond-async
 
 # @name getExecuteStatus
 GET {{executeStatus}} HTTP/1.1
-Authorization: Basic {{logindetails}}
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ###
@@ -47,7 +57,5 @@ Accept: application/json
 
 # @name getResults
 GET https://{{workspace}}.workspaces.test.eodhp.eco-ke-staging.com/files/eodhp-test-workspaces1/processing-results/cat_{{jobID}}.json HTTP/1.1
-Authorization: Bearer {{token}}
+Authorization: Bearer {{s3token}}
 Accept: application/json
-
-
