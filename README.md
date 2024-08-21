@@ -6,7 +6,7 @@ This project is designed to find values, for a number of asset locations, from a
 
 ### stac_items
 
-A list of stac items for which to get values from.
+A list of stac items for which to get values from. If this is not included a default set will be used.
 
 #### Example
 ```json
@@ -16,7 +16,7 @@ A list of stac items for which to get values from.
   ]
 ```
 
-### points_json
+### json_string
 
 GeoJSON list of latitudes and longitudes.
 
@@ -77,7 +77,7 @@ Send a `post` request to `https://test.eodatahub.org.uk/ades/sparkgeouser/ogc-ap
 {
     "inputs": {
         "workspace": "sparkgeouser",
-        "points_json": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-0.077,51.482]},\"properties\":{\"rand_point_id\":0}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.295,51.926]},\"properties\":{\"rand_point_id\":1}}]}",
+        "json_string": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-0.077,51.482]},\"properties\":{\"rand_point_id\":0}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.295,51.926]},\"properties\":{\"rand_point_id\":1}}]}",
         "stac_items": "[\"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130419110022-fv1.00.json\",\"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130428105409-fv1.00.json\",\"s3://lst-cogs/catalog/lst_images/2013/ESACCI-LST-L2P-LST-LNDST8-LONDON-20130428105433-fv1.00.json\"]"
     }
 }
@@ -95,7 +95,7 @@ Send a `POST` request to `https://hjbphasm1i.execute-api.eu-west-1.amazonaws.com
     "s3://lst-cogs/catalog/lst_images/2022/ESACCI-LST-L2P-LST-LNDST8-LONDON-20220710105237-fv1.00.json",
     "s3://lst-cogs/catalog/lst_images/2015/ESACCI-LST-L2P-LST-LNDST8-LONDON-20150119105810-fv1.00.json"
   ] ,
-  "points_json":{
+  "json_string":{
     "type": "FeatureCollection",
     "features": [
         {

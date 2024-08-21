@@ -11,6 +11,7 @@ from get_values import get_values_from_multiple_cogs, merge_results_into_dict
 from get_values_logger import logger
 from load_cogs import load_multiple_cogs
 from load_points import points_to_xr_dataset
+from stac_items import default_stac_items
 from stac_parsing import get_cog_urls
 
 
@@ -77,12 +78,10 @@ def parse_arguments():
     """
     logger.info("Parsing command-line arguments")
     parser = argparse.ArgumentParser(description="Make a request.")
-    # parser.add_argument("--json", type=str, help="JSON string with request parameters")
     parser.add_argument(
-        "--points_json", type=str, help="GeoJSON string with points data"
+        "--json_string", type=str, help="GeoJSON string with points data"
     )
-    parser.add_argument("--stac_items", type=str, help="STAC item URLs")
-
+    parser.add_argument("--stac_items", type=str, help="STAC item URLs", default=None)
     return parser.parse_args()
 
 
@@ -111,8 +110,11 @@ def get_catalog() -> dict:
 
 if __name__ == "__main__":
     args = parse_arguments()
-    arg_points_json = json.loads(args.points_json)
-    arg_stac_items = json.loads(args.stac_items)
+    arg_points_json = json.loads(args.json_string)
+    if args.stac_items is None:
+        arg_stac_items = default_stac_items
+    else:
+        arg_stac_items = json.loads(args.stac_items)
     process_response = process_request(
         points_json=arg_points_json,
         stac_items=arg_stac_items,

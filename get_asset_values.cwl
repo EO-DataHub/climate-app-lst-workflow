@@ -1,19 +1,16 @@
 cwlVersion: v1.2
 $graph:
   - class: Workflow
-    id: get-asset-values-workflow
+    id: get-asset-values-workflow-nostac
     label: get asset values
     doc: get asset values
     requirements:
       NetworkAccess:
         networkAccess: true
     inputs:
-      points_json:
+      json_string:
         type: string
         doc: JSON string with points data
-      stac_items:
-        type: string
-        doc: STAC item URLs
     outputs:
       - id: asset-result
         type: Directory
@@ -23,8 +20,7 @@ $graph:
       get-values:
         run: "#get-asset-values"
         in:
-          points_json: points_json
-          stac_items: stac_items
+          json_string: json_string
         out:
           - asset-result
   - class: CommandLineTool
@@ -36,16 +32,10 @@ $graph:
             dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:latest
     baseCommand: main.py
     inputs:
-        points_json:
+        json_string:
             type: string
             inputBinding:
-                prefix: --points_json=
-                separate: false
-                position: 4
-        stac_items:
-            type: string
-            inputBinding:
-                prefix: --stac_items=
+                prefix: --json_string=
                 separate: false
                 position: 4
     outputs:

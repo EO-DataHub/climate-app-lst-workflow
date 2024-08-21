@@ -8,9 +8,8 @@
 @deployStatus = {{deployProcessJson.response.headers.Location}}
 @executeStatus = {{executeProcess.response.headers.Location}}
 
-@jobid = {{getExecuteStatus.response.body.jobID}}
 
-@processName = get-asset-values-workflow-sparkgeouser
+@processName = get-asset-values-workflow-nostac
 
 
 
@@ -56,6 +55,6 @@ Accept: application/json
 
 
 # @name getResults
-GET https://{{workspace}}.workspaces.test.eodhp.eco-ke-staging.com/files/eodhp-test-workspaces1/processing-results/cat_{{jobID}}.json HTTP/1.1
+GET https://{{workspace}}.workspaces.test.eodhp.eco-ke-staging.com/files/eodhp-test-workspaces1/processing-results/cat_{{getExecuteStatus.response.body.jobID}}.json HTTP/1.1
 Authorization: Bearer {{s3token}}
 Accept: application/json

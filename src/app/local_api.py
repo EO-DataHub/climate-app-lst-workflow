@@ -5,6 +5,7 @@ FastAPI app for local API
 from fastapi import FastAPI, HTTPException
 from main import get_data_values
 from pydantic import BaseModel
+from stac_items import default_stac_items
 
 app = FastAPI()
 
@@ -18,7 +19,7 @@ class GetValuesInput(BaseModel):
         points_json (dict): GeoJSON object with points.
     """
 
-    stac_items: list[str]
+    stac_items: list[str] = default_stac_items
     points_json: dict
 
 
