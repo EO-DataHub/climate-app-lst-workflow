@@ -40,7 +40,7 @@ Content-Type: application/json
 
 {
   "executionUnit": {
-    "href": "https://gist.githubusercontent.com/geodowd/9549cb31641db5f306c0dc68694dcc6d/raw/43c85fdd526982574c78cd50a6a5a0d5f151bd2b/getassetvalues.cwl",
+    "href": "https://gist.githubusercontent.com/geodowd/9549cb31641db5f306c0dc68694dcc6d/raw/9df5a8a9a2442c0c962c5ae6b55a5942df9921da/nostac.cwl",
     "type": "application/cwl"
   }
 }
