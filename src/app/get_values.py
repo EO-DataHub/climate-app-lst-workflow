@@ -2,6 +2,7 @@
 Functions to get values from a cog file
 """
 
+from datetime import datetime
 from pathlib import Path
 
 import xarray as xr
@@ -76,14 +77,14 @@ def merge_results_into_dict(results_list: list, request_json: dict) -> dict:
     dict: The updated request JSON with merged results.
     """
     for feature in request_json["features"]:
-        if "id" in feature["properties"]:
-            feature["properties"]["original_id"] = feature["properties"]["id"]
-        feature["properties"]["id"] = ShortUUID().random(length=8)
+        if "id" not in feature["properties"]:
+            feature["properties"]["id"] = ShortUUID().random(length=8)
         feature["properties"]["returned_values"] = {}
 
     for file_info in results_list:
+        dt = datetime.strptime(
+            (file_info["file_path"].split("-")[6]), "%Y%m%d%H%M%S"
+        ).strftime("%Y-%m-%d %H:%M")
         for index, value in enumerate(file_info["values"]):
-            request_json["features"][index]["properties"]["returned_values"][
-                file_info["file_path"]
-            ] = value
+            request_json["features"][index]["properties"]["returned_values"][dt] = value
     return request_json
