@@ -7,11 +7,13 @@ from pathlib import Path
 
 import xarray as xr
 from get_values_logger import logger
+from load_cogs import load_cog
 from pyproj import Transformer
 from shortuuid import ShortUUID
+from stac_parsing import get_cog_details, get_stac_item
 
 
-def get_values(ds: xr.DataArray, points: xr.Dataset) -> list:
+def get_values(cog_url: str, points: xr.Dataset) -> list:
     """
     Extracts values from a COG file for specified points.
 
@@ -24,6 +26,7 @@ def get_values(ds: xr.DataArray, points: xr.Dataset) -> list:
     replacing NaNs with None.
     """
     logger.info("Getting values from COG file")
+    ds = load_cog(cog_url)
     ds_crs = ds.rio.crs
     if ds_crs == "EPSG:4326":
         points_transformed = points
@@ -40,14 +43,29 @@ def get_values(ds: xr.DataArray, points: xr.Dataset) -> list:
     )
     # replace nan with None
     values = [None if str(v) == "nan" else v for v in values]
-    source_file_name = Path(ds.attrs["file_path"]).stem
-    source_file_name = source_file_name.replace(".", "-")
-    return {"file_path": source_file_name, "values": values}
+    return values
 
 
-def get_values_from_multiple_cogs(
-    datasets: list[xr.DataArray], points: xr.Dataset
-) -> list:
+def get_values_from_stac(stac_url: list[str], points: xr.Dataset) -> dict:
+    """
+    Retrieves values from a COG file for given points.
+
+    Parameters:
+    - stac_item (dict): STAC item with COG URL.
+    - points (xr.Dataset): Dataset of points to extract values for.
+
+    Returns:
+    dict: A dictionary with file path and values.
+    """
+    logger.info("Getting values from STAC item")
+    stac_item = get_stac_item(stac_url)
+    stac_details = get_cog_details(stac_item)
+    logger.info("STAC details: %s", stac_details)
+    values = get_values(stac_details["url"], points)
+    return {"stac_details": stac_details, "values": values}
+
+
+def get_values_from_multiple_cogs(stac_urls: list[str], points: xr.Dataset) -> list:
     """
     Retrieves values from multiple COG files for given points.
 
@@ -60,8 +78,8 @@ def get_values_from_multiple_cogs(
     """
     logger.info("Getting values from multiple COG files")
     return_values = []
-    for ds in datasets:
-        return_values.append(get_values(ds, points))
+    for ds in stac_urls:
+        return_values.append(get_values_from_stac(ds, points))
     return return_values
 
 
@@ -81,10 +99,12 @@ def merge_results_into_dict(results_list: list, request_json: dict) -> dict:
             feature["properties"]["id"] = ShortUUID().random(length=8)
         feature["properties"]["returned_values"] = {}
 
-    for file_info in results_list:
-        dt = datetime.strptime(
-            (file_info["file_path"].split("-")[6]), "%Y%m%d%H%M%S"
-        ).strftime("%Y-%m-%d %H:%M")
-        for index, value in enumerate(file_info["values"]):
-            request_json["features"][index]["properties"]["returned_values"][dt] = value
+    for result in results_list:
+        dt = result["stac_details"]["datetime"]
+        file_name = result["stac_details"]["source_file_name"]
+        unit = result["stac_details"]["unit"]
+        for index, value in enumerate(result["values"]):
+            request_json["features"][index]["properties"]["returned_values"][
+                file_name
+            ] = {"value": value, "datetime": dt, "unit": unit}
     return request_json

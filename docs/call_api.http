@@ -21,7 +21,7 @@ Accept: application/json
 Content-Type: application/json
 Connection: keep-alive
 
-< /Users/sgdowd/Downloads/locon_schools_simple_no_comma_unix.geojson
+< /Users/sgdowd/Documents/1_EODH/values_from_cogs2/docs/api_input_nostac.json
 
 
 ###

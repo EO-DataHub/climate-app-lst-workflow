@@ -4,8 +4,10 @@ retrieving specific assets such as COG (Cloud Optimized GeoTIFF) URLs.
 """
 
 import json
+from pathlib import Path
 
 import fsspec
+from get_values_logger import logger
 
 
 def get_stac_item(url: str) -> dict:
@@ -30,29 +32,46 @@ def get_stac_item(url: str) -> dict:
     return stac_item
 
 
-def get_cog_url(stac_item: dict) -> str:
+def get_cog_details_from_stac_url(stac_url: str) -> dict:
+    stac_item = get_stac_item(stac_url)
+    cog_details = get_cog_details(stac_item)
+    return cog_details
+
+
+def get_cog_details(stac_item: dict) -> dict:
     """
     Extract the URL of the first COG (Cloud Optimized GeoTIFF)
     found in the STAC item's assets.
 
     Iterates through the assets in the provided STAC item, looking
     for an asset with a media type of 'image/tiff' and returns the
-    URL of the first match.
+    URL of the first match along with the datetime property of the STAC item.
 
     Parameters:
     - stac_item (dict): The STAC item to search through.
 
     Returns:
-    - str: The URL of the COG asset, if found. None otherwise.
+     - dict: A dictionary containing the URL of the COG asset and the datetime property,
+            if found. None otherwise.
     """
     # TODO: Get this to work with multiple assets including zarr files
+    logger.info("Getting COG details")
     for asset in stac_item["assets"]:
         media_type = stac_item["assets"][asset]["type"]
         if "image/tiff" in media_type:
-            return stac_item["assets"][asset]["href"]
+            cog_url = stac_item["assets"][asset]["href"]
+            dt = stac_item["properties"]["datetime"]
+            source_file_name = Path(cog_url).stem
+            source_file_name = source_file_name.replace(".", "-")
+            return {
+                "url": cog_url,
+                "datetime": dt,
+                "source_file_name": source_file_name,
+                "unit": stac_item["properties"]["unit"],
+            }
 
 
-def get_cog_urls(stac_item_url_list: list[str]) -> list[str]:
+def get_cog_data(stac_item_url_list: list[str]) -> list[dict]:
     """
     Retrieve a list of COG URLs from a list of STAC item URLs.
 
@@ -62,14 +81,14 @@ def get_cog_urls(stac_item_url_list: list[str]) -> list[str]:
     to load and extract the URLs.
 
     Parameters:
-    - stac_item_url_list (list[str]): A list of URLs of STAC items.
+    - stac_item_url_list (list[dict]): A list of URLs of STAC items.
 
     Returns:
-    - list[str]: A list of URLs of COG assets found in the STAC items.
+    - list[str]: A list of COG assets found in the STAC items.
     """
     cog_urls = []
     for stac_item_url in stac_item_url_list:
         stac_item = get_stac_item(stac_item_url)
-        cog_url = get_cog_url(stac_item)
+        cog_url = get_cog_details(stac_item)
         cog_urls.append(cog_url)
     return cog_urls

@@ -9,10 +9,9 @@ import os
 
 from get_values import get_values_from_multiple_cogs, merge_results_into_dict
 from get_values_logger import logger
-from load_cogs import load_multiple_cogs
 from load_points import points_to_xr_dataset
 from stac_items import default_stac_items
-from stac_parsing import get_cog_urls
+from stac_parsing import get_cog_data
 
 
 def get_data_values(stac_items: list[str], points_json: dict):
@@ -32,10 +31,11 @@ def get_data_values(stac_items: list[str], points_json: dict):
     dict: A dictionary with the merged results of data values
     for the provided points.
     """
-    cog_item_urls = get_cog_urls(stac_items)
-    cog_dss = load_multiple_cogs(cog_item_urls)
+    logger.info("Converting points to an xr dataset")
     points = points_to_xr_dataset(points_json)
-    return_values = get_values_from_multiple_cogs(datasets=cog_dss, points=points)
+    logger.info("Loading COGs")
+    return_values = get_values_from_multiple_cogs(stac_urls=stac_items, points=points)
+    logger.info("Merging results into dict")
     return_json = merge_results_into_dict(return_values, points_json)
     return return_json
 
