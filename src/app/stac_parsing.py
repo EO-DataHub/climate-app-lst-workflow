@@ -23,7 +23,10 @@ def get_stac_item(url: str) -> dict:
     - dict: The STAC item loaded as a dictionary.
     """
     with fsspec.open(url, anon=True) as f:
-        stac_item = json.load(f)
+        try:
+            stac_item = json.load(f)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Error loading JSON from {url}: {e}")
     return stac_item
 
 

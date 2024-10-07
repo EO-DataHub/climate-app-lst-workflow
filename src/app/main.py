@@ -62,7 +62,11 @@ def process_request(
         if workflow:
             return response
         else:
-            return {"statusCode": 200, "body": json.dumps(response)}
+            try:
+                return {"statusCode": 200, "body": json.dumps(response)}
+            except Exception as e:
+                logger.error("Error when returning response: %s", e)
+                return {"statusCode": 500, "body": json.dumps(str(e))}
     except Exception as e:
         logger.error("Error: %s", e)
         return {"statusCode": 500, "body": json.dumps(str(e))}
@@ -125,4 +129,7 @@ if __name__ == "__main__":
     with open("./asset_output/catalog.json", "w", encoding="utf-8") as f:
         catalog = get_catalog()
         catalog["data"] = process_response
-        json.dump(catalog, f)
+        try:
+            json.dump(catalog, f)
+        except Exception as e:
+            print("Error writing catalog.json file: %s", e)

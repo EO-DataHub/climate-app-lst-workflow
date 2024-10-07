@@ -20,9 +20,13 @@ def load_json(json_file: str) -> dict:
     dict: Points data loaded from the file.
     """
     logger.info("Loading json file from %s", json_file)
-    with open(json_file, encoding="utf-8") as f:
-        points_data = json.load(f)
-    return points_data
+    try:
+        with open(json_file, encoding="utf-8") as f:
+            points_data = json.load(f)
+        return points_data
+    except json.JSONDecodeError as e:
+        logger.error("Error loading JSON file(%s): %s", json_file, e)
+        raise
 
 
 def points_to_xr_dataset(points_data: dict) -> xr.Dataset:
