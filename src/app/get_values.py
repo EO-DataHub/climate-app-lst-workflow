@@ -101,10 +101,16 @@ def merge_results_into_dict(results_list: list, request_json: dict) -> dict:
 
     for result in results_list:
         dt = result["stac_details"]["datetime"]
+        # dt in YYYY-MM-DD HH:MM format
+        dt_string = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%SZ").strftime(
+            "%Y-%m-%d %H:%M"
+        )
         file_name = result["stac_details"]["source_file_name"]
         unit = result["stac_details"]["unit"]
         for index, value in enumerate(result["values"]):
-            request_json["features"][index]["properties"]["returned_values"][dt] = {
+            request_json["features"][index]["properties"]["returned_values"][
+                dt_string
+            ] = {
                 "value": value,
                 "datetime": dt,
                 "unit": unit,
