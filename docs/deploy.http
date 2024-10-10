@@ -40,7 +40,7 @@ Content-Type: application/json
 
 {
   "executionUnit": {
-    "href": "https://gist.githubusercontent.com/geodowd/9549cb31641db5f306c0dc68694dcc6d/raw/5fd3472e091afa1ccc88a3f016baa7790e34cbbb/nostac_02.cwl",
+    "href": "https://gist.githubusercontent.com/geodowd/1776c94ac067989a1222e457c023abb9/raw/533f4456e56da5ae072279612be3fb5bc5cfd2b3/lst_dt.cwl",
     "type": "application/cwl"
   }
 }

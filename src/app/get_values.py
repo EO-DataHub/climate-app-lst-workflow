@@ -104,7 +104,10 @@ def merge_results_into_dict(results_list: list, request_json: dict) -> dict:
         file_name = result["stac_details"]["source_file_name"]
         unit = result["stac_details"]["unit"]
         for index, value in enumerate(result["values"]):
-            request_json["features"][index]["properties"]["returned_values"][
-                file_name
-            ] = {"value": value, "datetime": dt, "unit": unit}
+            request_json["features"][index]["properties"]["returned_values"][dt] = {
+                "value": value,
+                "datetime": dt,
+                "unit": unit,
+                "file_name": file_name,
+            }
     return request_json

@@ -29,7 +29,7 @@ $graph:
         NetworkAccess:
             networkAccess: true
         DockerRequirement:
-            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:latest
+            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:dt
     baseCommand: main.py
     inputs:
         json_string:
