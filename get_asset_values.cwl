@@ -8,9 +8,9 @@ $graph:
       NetworkAccess:
         networkAccess: true
     inputs:
-      json_string:
+      json_file:
         type: string
-        doc: JSON string with points data
+        doc: JSON file with points data
     outputs:
       - id: asset-result
         type: Directory
@@ -20,7 +20,7 @@ $graph:
       get-values:
         run: "#get-asset-values"
         in:
-          json_string: json_string
+          json_file: json_file
         out:
           - asset-result
   - class: CommandLineTool
@@ -32,10 +32,10 @@ $graph:
             dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:latest
     baseCommand: main.py
     inputs:
-        json_string:
+        json_file:
             type: string
             inputBinding:
-                prefix: --json_string=
+                prefix: --json_file=
                 separate: false
                 position: 4
     outputs:

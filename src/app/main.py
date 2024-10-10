@@ -6,7 +6,10 @@ Main starting point for the workflow.
 import argparse
 import json
 import os
+import tempfile
 
+import boto3
+import requests
 from get_values import get_values_from_multiple_cogs, merge_results_into_dict
 from get_values_logger import logger
 from load_points import points_to_xr_dataset
@@ -110,6 +113,82 @@ def get_catalog() -> dict:
             {"rel": "root", "href": "./catalog.json"},
         ],
     }
+
+
+def load_json_from_file(file_path):
+    """
+    Loads JSON content from a file and returns it as a dictionary.
+
+    Args:
+        file_path (str): The path to the JSON file.
+
+    Returns:
+        dict: The JSON content as a dictionary.
+
+    Raises:
+        RuntimeError: If the file is empty or contains invalid JSON.
+    """
+    with open(file_path, "r", encoding="utf-8") as file:
+        content = file.read()
+        if not content.strip():
+            raise RuntimeError(f"The JSON file {file_path} is empty.")
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(
+                f"Failed to decode the content of the JSON file {file_path}"
+            ) from exc
+
+
+def load_json_from_url(url):
+    """
+    Loads JSON content from a URL and returns it as a dictionary.
+
+    Args:
+        url (str): The URL to the JSON file.
+
+    Returns:
+        dict: The JSON content as a dictionary.
+
+    Raises:
+        RuntimeError: If the request fails or the content is invalid JSON.
+    """
+    url_response = requests.get(url, timeout=30)
+    if url_response.status_code != 200:
+        raise RuntimeError(
+            f"Request to get the content of the input JSON {url} over HTTP failed: {url_response.text}"
+        )
+    content = url_response.content.decode("utf-8")
+    if not content.strip():
+        raise RuntimeError(f"The JSON content from {url} is empty.")
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            f"Failed to decode the content of the input JSON {url} over HTTP"
+        ) from exc
+
+
+def load_json_from_s3(s3_path):
+    """
+    Loads JSON content from an S3 path and returns it as a dictionary.
+
+    Args:
+        s3_path (str): The S3 path to the JSON file.
+
+    Returns:
+        dict: The JSON content as a dictionary.
+
+    Raises:
+        RuntimeError: If the file is empty or contains invalid JSON.
+    """
+    temp_file = tempfile.NamedTemporaryFile(delete=False).name
+    s3 = boto3.client("s3")
+    print("Downloading file from S3...")
+    s3_bucket = s3_path.split("/")[2]
+    s3_bucketkey = "/".join(s3_path.split("/")[3:])
+    s3.download_file(s3_bucket, s3_bucketkey, temp_file)
+    return load_json_from_file(temp_file)
 
 
 if __name__ == "__main__":
