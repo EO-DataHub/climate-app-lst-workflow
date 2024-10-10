@@ -6,6 +6,7 @@ Main starting point for the workflow.
 import argparse
 import json
 import os
+import sys
 import tempfile
 
 import boto3
@@ -85,9 +86,7 @@ def parse_arguments():
     """
     logger.info("Parsing command-line arguments")
     parser = argparse.ArgumentParser(description="Make a request.")
-    parser.add_argument(
-        "--json_string", type=str, help="GeoJSON string with points data"
-    )
+    parser.add_argument("--json_file", type=str, help="GeoJSON string with points data")
     parser.add_argument("--stac_items", type=str, help="STAC item URLs", default=None)
     return parser.parse_args()
 
@@ -193,7 +192,19 @@ def load_json_from_s3(s3_path):
 
 if __name__ == "__main__":
     args = parse_arguments()
-    arg_points_json = json.loads(args.json_string)
+    try:
+        if "http" in args.json_file:
+            logger.info("Getting the content of the input JSON over HTTP")
+            arg_points_json = load_json_from_url(args.json_file)
+        elif "s3" in args.json_file:
+            logger.info("Getting the content of the input JSON from S3")
+            arg_points_json = load_json_from_s3(args.json_file)
+        else:
+            logger.info("Reading the input JSON file")
+            arg_points_json = load_json_from_file(args.json_file)
+    except RuntimeError as e:
+        logger.error(e)
+        sys.exit(1)
     if args.stac_items is None:
         arg_stac_items = default_stac_items
     else:

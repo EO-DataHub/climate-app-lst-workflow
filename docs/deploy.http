@@ -10,7 +10,7 @@
 
 @jobid = {{getExecuteStatus.response.body.jobID}}
 
-@processName = get-asset-values-workflow-nostac
+@processName = lst
 
 
 
@@ -40,7 +40,7 @@ Content-Type: application/json
 
 {
   "executionUnit": {
-    "href": "https://gist.githubusercontent.com/geodowd/1776c94ac067989a1222e457c023abb9/raw/533f4456e56da5ae072279612be3fb5bc5cfd2b3/lst_dt.cwl",
+    "href": "https://gist.githubusercontent.com/geodowd/1776c94ac067989a1222e457c023abb9/raw/1bdcbdf2841a5e56f32908a48ce301d3c46e6ae3/lst.cwl",
     "type": "application/cwl"
   }
 }

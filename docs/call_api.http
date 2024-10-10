@@ -8,7 +8,7 @@
 @executeStatus = {{executeProcess.response.headers.Location}}
 
 
-@processName = get-asset-values-workflow-nostac
+@processName = lst
 
 
 
@@ -41,7 +41,12 @@ Accept: application/json
 Content-Type: application/json
 Prefer: respond-async
 
-< /Users/sgdowd/Documents/1_EODH/values_from_cogs2/docs/workflow_input.json
+{
+    "inputs": {
+        "workspace": "sparkgeouser",
+        "json_file": "https://gist.githubusercontent.com/geodowd/1776c94ac067989a1222e457c023abb9/raw/1d049255120ad6afa05c1f8d91091d9f0554c2f9/points.geojson"
+    }
+}
 
 ###
 
