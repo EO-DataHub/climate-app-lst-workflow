@@ -4,3 +4,5 @@ rioxarray
 fsspec
 s3fs
 shortuuid
+boto3
+requests

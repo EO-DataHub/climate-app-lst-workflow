@@ -11,6 +11,8 @@ import tempfile
 
 import boto3
 import requests
+from botocore import UNSIGNED
+from botocore.client import Config
 from get_values import get_values_from_multiple_cogs, merge_results_into_dict
 from get_values_logger import logger
 from load_points import points_to_xr_dataset
@@ -183,6 +185,10 @@ def load_json_from_s3(s3_path):
     """
     temp_file = tempfile.NamedTemporaryFile(delete=False).name
     s3 = boto3.client("s3")
+
+    # Create an S3 client with anonymous access
+    s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
+    logger.debug("Using the unsigned S3 client")
     print("Downloading file from S3...")
     s3_bucket = s3_path.split("/")[2]
     s3_bucketkey = "/".join(s3_path.split("/")[3:])

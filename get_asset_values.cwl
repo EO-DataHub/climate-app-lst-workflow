@@ -1,7 +1,7 @@
 cwlVersion: v1.2
 $graph:
   - class: Workflow
-    id: lst
+    id: lst2
     label: get asset values
     doc: get asset values
     requirements:
@@ -29,7 +29,7 @@ $graph:
         NetworkAccess:
             networkAccess: true
         DockerRequirement:
-            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:lst
+            dockerImageId: get_asset_values:lst2 #dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:lst
     baseCommand: main.py
     inputs:
         json_file:

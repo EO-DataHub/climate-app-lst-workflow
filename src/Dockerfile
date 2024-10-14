@@ -8,7 +8,7 @@ ADD app/requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-RUN pip install boto3 requests
+RUN pip install botocore
 
 ADD app/*.py /usr/bin/
 RUN chmod +x /usr/bin/*.py

@@ -10,7 +10,7 @@
 
 @jobid = {{getExecuteStatus.response.body.jobID}}
 
-@processName = lst
+@processName = lst2
 
 
 
@@ -40,7 +40,7 @@ Content-Type: application/json
 
 {
   "executionUnit": {
-    "href": "https://gist.githubusercontent.com/geodowd/1776c94ac067989a1222e457c023abb9/raw/1bdcbdf2841a5e56f32908a48ce301d3c46e6ae3/lst.cwl",
+    "href": "https://eodh-cwl.s3.eu-west-1.amazonaws.com/get_asset_values.cwl",
     "type": "application/cwl"
   }
 }
