@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 
+import pandas as pd
 from get_values import get_values_from_multiple_cogs, merge_results_into_dict
 from get_values_logger import logger
 from load_points import points_to_xr_dataset
@@ -112,6 +113,34 @@ def get_catalog() -> dict:
     }
 
 
+def response_to_csv(in_json: dict, out_csv: str) -> None:
+    """
+    Converts a JSON response to a CSV file with columns for every datetime,
+    a row for every id, and values of 'value'.
+
+    Parameters:
+    in_json (dict): The input JSON data.
+    out_csv (str): The output CSV file path.
+    """
+    try:
+        data = []
+        for feature in in_json.get("features", []):
+            feature_id = feature["properties"]["id"]
+            for dt, values in feature["properties"]["returned_values"].items():
+                data.append(
+                    {"id": feature_id, "datetime": dt, "value": values.get("value")}
+                )
+
+        df = pd.DataFrame(data)
+        pivot_df = df.pivot_table(index="id", columns="datetime", values="value")
+        pivot_df.reset_index(inplace=True)
+        pivot_df.to_csv(out_csv, index=False)
+        logger.info("CSV file successfully created at %s", out_csv)
+    except Exception as e:
+        logger.error("An error occurred: %s", e)
+        raise
+
+
 if __name__ == "__main__":
     args = parse_arguments()
     arg_points_json = json.loads(args.json_string)
@@ -128,6 +157,7 @@ if __name__ == "__main__":
     os.makedirs("asset_output", exist_ok=True)
     with open("./asset_output/catalog.json", "w", encoding="utf-8") as f:
         catalog = get_catalog()
+        response_to_csv(process_response, "./asset_output/data.csv")
         catalog["data"] = process_response
         try:
             json.dump(catalog, f)
