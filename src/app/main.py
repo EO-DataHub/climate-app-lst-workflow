@@ -12,7 +12,6 @@ from get_values import get_values_from_multiple_cogs, merge_results_into_dict
 from get_values_logger import logger
 from load_points import points_to_xr_dataset
 from stac_items import default_stac_items
-from stac_parsing import get_cog_data
 
 
 def get_data_values(stac_items: list[str], points_json: dict):

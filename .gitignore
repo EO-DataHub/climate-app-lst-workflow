@@ -166,3 +166,4 @@ notebooks/
 */.aws-sam/
 
 .vscode/settings.json
+uv.lock
