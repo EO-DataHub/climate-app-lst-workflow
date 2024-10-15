@@ -1,6 +1,6 @@
 {
     "inputs": {
         "workspace": "sparkgeouser",
-        "json_file": "s3://lst-cogs/points.geojson"
+        "json_file": "sparkgeouser/points.geojson"
     }
 }

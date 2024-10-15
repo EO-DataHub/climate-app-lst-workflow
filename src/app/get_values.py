@@ -2,9 +2,6 @@
 Functions to get values from a cog file
 """
 
-from datetime import datetime
-from pathlib import Path
-
 import xarray as xr
 from get_values_logger import logger
 from load_cogs import load_cog

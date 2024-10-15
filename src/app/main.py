@@ -11,13 +11,10 @@ import tempfile
 
 import boto3
 import requests
-from botocore import UNSIGNED
-from botocore.client import Config
 from get_values import get_values_from_multiple_cogs, merge_results_into_dict
 from get_values_logger import logger
 from load_points import points_to_xr_dataset
 from stac_items import default_stac_items
-from stac_parsing import get_cog_data
 
 
 def get_data_values(stac_items: list[str], points_json: dict):
@@ -129,7 +126,7 @@ def load_json_from_file(file_path):
     Raises:
         RuntimeError: If the file is empty or contains invalid JSON.
     """
-    with open(file_path, "r", encoding="utf-8") as file:
+    with open(file_path, encoding="utf-8") as file:
         content = file.read()
         if not content.strip():
             raise RuntimeError(f"The JSON file {file_path} is empty.")
@@ -141,73 +138,29 @@ def load_json_from_file(file_path):
             ) from exc
 
 
-def load_json_from_url(url):
-    """
-    Loads JSON content from a URL and returns it as a dictionary.
-
-    Args:
-        url (str): The URL to the JSON file.
-
-    Returns:
-        dict: The JSON content as a dictionary.
-
-    Raises:
-        RuntimeError: If the request fails or the content is invalid JSON.
-    """
-    url_response = requests.get(url, timeout=30)
-    if url_response.status_code != 200:
-        raise RuntimeError(
-            f"Request to get the content of the input JSON {url} over HTTP failed: {url_response.text}"
-        )
-    content = url_response.content.decode("utf-8")
-    if not content.strip():
-        raise RuntimeError(f"The JSON content from {url} is empty.")
-    try:
-        return json.loads(content)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(
-            f"Failed to decode the content of the input JSON {url} over HTTP"
-        ) from exc
-
-
-def load_json_from_s3(s3_path):
-    """
-    Loads JSON content from an S3 path and returns it as a dictionary.
-
-    Args:
-        s3_path (str): The S3 path to the JSON file.
-
-    Returns:
-        dict: The JSON content as a dictionary.
-
-    Raises:
-        RuntimeError: If the file is empty or contains invalid JSON.
-    """
-    temp_file = tempfile.NamedTemporaryFile(delete=False).name
-    s3 = boto3.client("s3")
-
-    # Create an S3 client with anonymous access
-    s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
-    logger.debug("Using the unsigned S3 client")
-    print("Downloading file from S3...")
-    s3_bucket = s3_path.split("/")[2]
-    s3_bucketkey = "/".join(s3_path.split("/")[3:])
-    s3.download_file(s3_bucket, s3_bucketkey, temp_file)
-    return load_json_from_file(temp_file)
-
-
 if __name__ == "__main__":
     args = parse_arguments()
+    # create a temporary file to store the points
+    temp_file = tempfile.NamedTemporaryFile(mode="w", delete=False)
     try:
-        if "http" in args.json_file:
-            logger.info("Getting the content of the input JSON over HTTP")
-            arg_points_json = load_json_from_url(args.json_file)
-        elif "s3" in args.json_file:
-            logger.info("Getting the content of the input JSON from S3")
-            arg_points_json = load_json_from_s3(args.json_file)
+        s3 = boto3.client("s3")
+        bucket_arn = (
+            "arn:aws:s3:eu-west-2:312280911266:accesspoint/"
+            "eodhp-test-gstjkhpo-sparkgeouser-s3"
+        )
+        file_name = args.json_file
+        if file_name.startswith("http"):
+            logger.info(f"Downloading {file_name} using http...")
+            response = requests.get(file_name)
+            temp_file.write(response.text)
+            temp_file.close()
+            arg_points_json = load_json_from_file(temp_file.name)
         else:
-            logger.info("Reading the input JSON file")
-            arg_points_json = load_json_from_file(args.json_file)
+            logger.info(f"Downloading {file_name} from {bucket_arn}...")
+            base_name = os.path.basename(file_name)
+            # Use pathlib.Path to get the name without suffix
+            s3.download_file(bucket_arn, file_name, base_name)
+            arg_points_json = load_json_from_file(base_name)
     except RuntimeError as e:
         logger.error(e)
         sys.exit(1)
