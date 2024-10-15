@@ -6,3 +6,4 @@ shapely
 ipykernel
 fastapi
 uvicorn
+ruff
