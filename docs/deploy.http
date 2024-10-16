@@ -10,7 +10,7 @@
 
 @jobid = {{getExecuteStatus.response.body.jobID}}
 
-@processName = get-asset-values-workflow-nostac
+@processName = lst-csv
 
 
 
@@ -36,14 +36,9 @@ Accept: application/json
 POST {{scheme}}://{{ades}}/{{username}}/ogc-api/processes HTTP/1.1
 Authorization: Bearer {{token}}
 Accept: application/json
-Content-Type: application/json
+Content-Type: application/cwl+yaml
 
-{
-  "executionUnit": {
-    "href": "https://gist.githubusercontent.com/geodowd/1776c94ac067989a1222e457c023abb9/raw/c35110db6badd4fbec2dd52cb3ffe5828a9249ae/value_2_0_1.cwl",
-    "type": "application/cwl"
-  }
-}
+< ../get_asset_values.cwl
 
 ###
 

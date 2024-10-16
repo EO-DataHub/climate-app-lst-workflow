@@ -28,11 +28,23 @@ def get_stac_item(url: str) -> dict:
         try:
             stac_item = json.load(f)
         except json.JSONDecodeError as e:
-            raise ValueError(f"Error loading JSON from {url}: {e}")
+            raise ValueError(
+                f"Error loading JSON from {url}: {type(e).__name__}: {e}"
+            ) from e
     return stac_item
 
 
 def get_cog_details_from_stac_url(stac_url: str) -> dict:
+    """
+    Retrieve COG (Cloud Optimized GeoTIFF) details from a
+    STAC (SpatioTemporal Asset Catalog) URL.
+
+    Args:
+        stac_url (str): The URL of the STAC item.
+
+    Returns:
+        dict: A dictionary containing the COG details extracted from the STAC item.
+    """
     stac_item = get_stac_item(stac_url)
     cog_details = get_cog_details(stac_item)
     return cog_details
