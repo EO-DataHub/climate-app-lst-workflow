@@ -29,7 +29,7 @@ $graph:
         NetworkAccess:
             networkAccess: true
         DockerRequirement:
-            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:csv
+            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:csv5
     baseCommand: main.py
     inputs:
         json_string:
@@ -42,4 +42,4 @@ $graph:
         asset-result:
             type: Directory
             outputBinding:
-                glob: "./asset_output"
+                glob: .

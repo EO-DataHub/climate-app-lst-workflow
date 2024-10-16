@@ -5,9 +5,9 @@ Main starting point for the workflow.
 
 import argparse
 import json
-import os
 
 import pandas as pd
+from create_stac import createStacCatalogRoot, createStacItem
 from get_values import get_values_from_multiple_cogs, merge_results_into_dict
 from get_values_logger import logger
 from load_points import points_to_xr_dataset
@@ -89,29 +89,6 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def get_catalog() -> dict:
-    """
-    Creates and returns a basic STAC catalog dictionary.
-
-    This function generates a dictionary representing a SpatioTemporal Asset Catalog
-    (STAC) catalog with predefined properties.
-
-    Returns:
-    - dict: A dictionary representing the STAC catalog with predefined properties.
-    """
-    logger.info("Creating STAC catalog")
-    return {
-        "stac_version": "1.0.0",
-        "id": "asset-vulnerability-catalog",
-        "type": "Catalog",
-        "description": "OS-C physrisk asset vulnerability catalog",
-        "links": [
-            {"rel": "self", "href": "./catalog.json"},
-            {"rel": "root", "href": "./catalog.json"},
-        ],
-    }
-
-
 def response_to_csv(in_json: dict, out_csv: str) -> None:
     """
     Converts a JSON response to a CSV file with columns for every datetime,
@@ -153,12 +130,20 @@ if __name__ == "__main__":
         workflow=True,
     )
     # Make a stac catalog.json file to satitsfy the process runner
-    os.makedirs("asset_output", exist_ok=True)
-    with open("./asset_output/catalog.json", "w", encoding="utf-8") as f:
-        catalog = get_catalog()
-        response_to_csv(process_response, "./asset_output/data.csv")
+    out_name = "./data.csv"
+    response_to_csv(process_response, out_name)
+
+    with open("./catalog.json", "w", encoding="utf-8") as f:
+        catalog = createStacCatalogRoot(outName=out_name)
         catalog["data"] = process_response
         try:
             json.dump(catalog, f)
         except Exception as e:
             print("Error writing catalog.json file: %s", e)
+
+    with open("./data.json", "w", encoding="utf-8") as f:
+        stacitem = createStacItem(outName=out_name)
+        try:
+            json.dump(stacitem, f)
+        except Exception as e:
+            print("Error writing data.json file: %s", e)

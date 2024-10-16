@@ -36,14 +36,9 @@ Accept: application/json
 POST {{scheme}}://{{ades}}/{{username}}/ogc-api/processes HTTP/1.1
 Authorization: Bearer {{token}}
 Accept: application/json
-Content-Type: application/json
+Content-Type: application/cwl+yaml
 
-{
-  "executionUnit": {
-    "href": "https://eodh-cwl.s3.eu-west-1.amazonaws.com/get_asset_values_csv.cwl",
-    "type": "application/cwl"
-  }
-}
+< ../get_asset_values.cwl
 
 ###
 
