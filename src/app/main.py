@@ -194,7 +194,6 @@ if __name__ == "__main__":
         query=stac_query["query"],
         catalog_url=stac_query["stac_catalog"],
         collection=stac_query["collection"],
-        band=stac_query["band"],
         max_items=stac_query["max_items"],
     )
 

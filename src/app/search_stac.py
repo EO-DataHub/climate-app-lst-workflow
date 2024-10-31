@@ -74,13 +74,12 @@ def search_catalog(
     return search
 
 
-def get_search_results(search, band="cog") -> list:
+def get_search_results(search) -> list:
     """
     Retrieves asset hrefs from search results.
 
     Args:
         search (pystac_client.ItemSearch): The search results.
-        band (str, optional): The asset band to retrieve. Defaults to "cog".
 
     Returns:
         list: A list of asset href values.
@@ -123,12 +122,6 @@ def parse_args() -> argparse.Namespace:
         default=None,
     )
     parser.add_argument(
-        "--band",
-        type=str,
-        help="Band to search",
-        default="cog",
-    )
-    parser.add_argument(
         "--max_items", type=int, help="Maximum number of items to return", default=None
     )
     return parser.parse_args()
@@ -139,7 +132,6 @@ def search_stac(
     query: dict,
     catalog_url: str,
     collection: str = None,
-    band: str = "cog",
     max_items: int = None,
 ) -> list:
     """
@@ -150,7 +142,6 @@ def search_stac(
         query (dict): The query parameters for the search.
         catalog_url (str): The URL of the STAC catalog to open.
         collection (str, optional): The collection to search within.
-        band (str, optional): The asset band to retrieve. Defaults to "cog".
         max_items (int, optional): The maximum number of items to return.
 
     Returns:
@@ -164,7 +155,7 @@ def search_stac(
         collection=collection,
         max_items=max_items,
     )
-    results = get_search_results(search, band=band)
+    results = get_search_results(search)
     return results
 
 
@@ -195,13 +186,11 @@ def process_stac_query_args(stac_query: str) -> dict:
         end_date = query_dict.pop("end_date")
         collection = query_dict.pop("collection")
         time_range = f"{start_date}/{end_date}"
-        band = query_dict.pop("band", "cog")
         max_items = query_dict.pop("max_items", None)
         return {
             "stac_catalog": stac_catalog,
             "time_range": time_range,
             "collection": collection,
-            "band": band,
             "query": query_dict,
             "max_items": max_items,
         }
@@ -222,5 +211,5 @@ if __name__ == "__main__":
         collection=args.collection,
         max_items=args.max_items,
     )
-    results = get_search_results(search, band=args.band)
+    results = get_search_results(search)
     print(results)
