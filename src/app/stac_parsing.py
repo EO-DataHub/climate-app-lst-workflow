@@ -6,7 +6,7 @@ retrieving specific assets such as COG (Cloud Optimized GeoTIFF) URLs.
 import json
 from pathlib import Path
 
-import fsspec
+import requests
 from get_values_logger import logger
 
 
@@ -24,13 +24,20 @@ def get_stac_item(url: str) -> dict:
     Returns:
     - dict: The STAC item loaded as a dictionary.
     """
-    with fsspec.open(url, anon=True) as f:
-        try:
-            stac_item = json.load(f)
-        except json.JSONDecodeError as e:
-            raise ValueError(
-                f"Error loading JSON from {url}: {type(e).__name__}: {e}"
-            ) from e
+    try:
+        logger.debug(f"Attempting to open URL: {url}")
+        with requests.get(url) as f:
+            try:
+                logger.debug(f"Successfully opened URL: {url}")
+                stac_item = f.json()
+            except json.JSONDecodeError as e:
+                logger.error(f"Error loading JSON from {url}: {type(e).__name__}: {e}")
+                raise ValueError(
+                    f"Error loading JSON from {url}: {type(e).__name__}: {e}"
+                ) from e
+    except Exception as e:
+        logger.error(f"Error opening {url}: {type(e).__name__}: {e}")
+        raise ValueError(f"Error opening {url}: {type(e).__name__}: {e}") from e
     return stac_item
 
 
@@ -75,11 +82,12 @@ def get_cog_details(stac_item: dict) -> dict:
             dt = stac_item["properties"]["datetime"]
             source_file_name = Path(cog_url).stem
             source_file_name = source_file_name.replace(".", "-")
+            unit = stac_item["properties"].get("unit", None)
             return {
                 "url": cog_url,
                 "datetime": dt,
                 "source_file_name": source_file_name,
-                "unit": stac_item["properties"]["unit"],
+                "unit": unit,
             }
 
 

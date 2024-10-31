@@ -1,9 +1,12 @@
 cwlVersion: v1.2
 $graph:
   - class: Workflow
-    id: lst-csv
-    label: get asset values
-    doc: get asset values
+    id: lst-filter
+    label: Land Surface Temperature (LST)
+    doc: >
+      The Land Surface Temperature workflow will report on observed land surface temperature observations from your assets.
+
+      This workflow requires the following columns: ID, latitude, longitude
     requirements:
       NetworkAccess:
         networkAccess: true
@@ -11,6 +14,9 @@ $graph:
       json_file:
         type: string
         doc: JSON file with points data
+      stac_query:
+        type: string
+        doc: 
     outputs:
       - id: asset-result
         type: Directory
@@ -21,6 +27,7 @@ $graph:
         run: "#get-asset-values"
         in:
           json_file: json_file
+          stac_query: stac_query
         out:
           - asset-result
   - class: CommandLineTool
@@ -29,7 +36,7 @@ $graph:
         NetworkAccess:
             networkAccess: true
         DockerRequirement:
-            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:csv5
+            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:filter
     baseCommand: main.py
     inputs:
         json_file:
@@ -38,6 +45,12 @@ $graph:
                 prefix: --json_file=
                 separate: false
                 position: 4
+        stac_query:
+            type: string
+            inputBinding:
+                prefix: --stac_query=
+                separate: false
+                position: 5
     outputs:
         asset-result:
             type: Directory

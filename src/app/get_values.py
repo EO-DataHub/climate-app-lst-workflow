@@ -2,9 +2,8 @@
 Functions to get values from a cog file
 """
 
-from datetime import datetime
-
 import xarray as xr
+from dateutil.parser import parse
 from get_values_logger import logger
 from load_cogs import load_cog
 from pyproj import Transformer
@@ -56,15 +55,18 @@ def get_values_from_stac(stac_url: list[str], points: xr.Dataset) -> dict:
     Returns:
     dict: A dictionary with file path and values.
     """
-    logger.info("Getting values from STAC item")
+    logger.info("Getting values from STAC item.")
     stac_item = get_stac_item(stac_url)
+    logger.info("Got STAC item")
     stac_details = get_cog_details(stac_item)
     logger.info("STAC details: %s", stac_details)
     values = get_values(stac_details["url"], points)
     return {"stac_details": stac_details, "values": values}
 
 
-def get_values_from_multiple_cogs(stac_urls: list[str], points: xr.Dataset) -> list:
+def get_values_from_multiple_stac_items(
+    stac_urls: list[str], points: xr.Dataset
+) -> list:
     """
     Retrieves values from multiple COG files for given points.
 
@@ -101,11 +103,11 @@ def merge_results_into_dict(results_list: list, request_json: dict) -> dict:
     for result in results_list:
         dt = result["stac_details"]["datetime"]
         # dt in YYYY-MM-DD HH:MM format
-        dt_string = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%SZ").strftime(
-            "%Y-%m-%d %H:%M"
-        )
+        logger.info("Datetime: %s", dt)
+        dt_string = parse(dt).strftime("%Y-%m-%d %H:%M")
+        logger.info("Datetime string: %s", dt_string)
         file_name = result["stac_details"]["source_file_name"]
-        unit = result["stac_details"]["unit"]
+        unit = result["stac_details"].get("unit", "none")
         for index, value in enumerate(result["values"]):
             request_json["features"][index]["properties"]["returned_values"][
                 dt_string
