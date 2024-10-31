@@ -10,7 +10,9 @@ import sys
 import tempfile
 
 import boto3
+import pandas as pd
 import requests
+from create_stac import createStacCatalogRoot, createStacItem
 from get_values import get_values_from_multiple_cogs, merge_results_into_dict
 from get_values_logger import logger
 from load_points import points_to_xr_dataset
@@ -90,27 +92,32 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def get_catalog() -> dict:
+def response_to_csv(in_json: dict, out_csv: str) -> None:
     """
-    Creates and returns a basic STAC catalog dictionary.
+    Converts a JSON response to a CSV file with columns for every datetime,
+    a row for every id, and values of 'value'.
 
-    This function generates a dictionary representing a SpatioTemporal Asset Catalog
-    (STAC) catalog with predefined properties.
-
-    Returns:
-    - dict: A dictionary representing the STAC catalog with predefined properties.
+    Parameters:
+    in_json (dict): The input JSON data.
+    out_csv (str): The output CSV file path.
     """
-    logger.info("Creating STAC catalog")
-    return {
-        "stac_version": "1.0.0",
-        "id": "asset-vulnerability-catalog",
-        "type": "Catalog",
-        "description": "OS-C physrisk asset vulnerability catalog",
-        "links": [
-            {"rel": "self", "href": "./catalog.json"},
-            {"rel": "root", "href": "./catalog.json"},
-        ],
-    }
+    try:
+        data = []
+        for feature in in_json.get("features", []):
+            feature_id = feature["properties"]["id"]
+            for dt, values in feature["properties"]["returned_values"].items():
+                data.append(
+                    {"id": feature_id, "datetime": dt, "value": values.get("value")}
+                )
+
+        df = pd.DataFrame(data)
+        pivot_df = df.pivot_table(index="id", columns="datetime", values="value")
+        pivot_df.reset_index(inplace=True)
+        pivot_df.to_csv(out_csv, index=False)
+        logger.info("CSV file successfully created at %s", out_csv)
+    except Exception as e:
+        logger.error("An error occurred: %s", e)
+        raise
 
 
 def load_json_from_file(file_path):
@@ -174,11 +181,20 @@ if __name__ == "__main__":
         workflow=True,
     )
     # Make a stac catalog.json file to satitsfy the process runner
-    os.makedirs("asset_output", exist_ok=True)
-    with open("./asset_output/catalog.json", "w", encoding="utf-8") as f:
-        catalog = get_catalog()
+    out_name = "./data.csv"
+    response_to_csv(process_response, out_name)
+
+    with open("./catalog.json", "w", encoding="utf-8") as f:
+        catalog = createStacCatalogRoot(outName=out_name)
         catalog["data"] = process_response
         try:
             json.dump(catalog, f)
         except Exception as e:
             print("Error writing catalog.json file: %s", e)
+
+    with open("./data.json", "w", encoding="utf-8") as f:
+        stacitem = createStacItem(outName=out_name)
+        try:
+            json.dump(stacitem, f)
+        except Exception as e:
+            print("Error writing data.json file: %s", e)

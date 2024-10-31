@@ -10,7 +10,7 @@
 
 @jobid = {{getExecuteStatus.response.body.jobID}}
 
-@processName = lst
+@processName = lst-csv
 
 
 

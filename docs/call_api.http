@@ -8,7 +8,7 @@
 @executeStatus = {{executeProcess.response.headers.Location}}
 
 
-@processName = lst
+@processName = lst-csv
 
 
 
@@ -55,5 +55,24 @@ Accept: application/json
 
 # @name getResults
 GET https://{{workspace}}.workspaces.test.eodhp.eco-ke-staging.com/files/eodhp-test-workspaces1/processing-results/cat_{{getExecuteStatus.response.body.jobID}}.json HTTP/1.1
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+# @name getItem
+GET https://sparkgeouser.workspaces.test.eodhp.eco-ke-staging.com/files/eodhp-test-workspaces1/processing-results/cat_{{getExecuteStatus.response.body.jobID}}/col_{{getExecuteStatus.response.body.jobID}}/data-1729000851.8787746.json
+Authorization: Bearer {{token}}
+Accept: application/json
+###
+# @name getItemManual
+GET https://sparkgeouser.workspaces.test.eodhp.eco-ke-staging.com/files/eodhp-test-workspaces1/processing-results/cat_bfd833e2-8afd-11ef-8657-9625a5233070/col_bfd833e2-8afd-11ef-8657-9625a5233070/data-1729000851.8787746.json
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+# @name getCsv
+GET https://sparkgeouser.workspaces.test.eodhp.eco-ke-staging.com/files/eodhp-test-workspaces1/processing-results/cat_{{getExecuteStatus.response.body.jobID}}/col_{{getExecuteStatus.response.body.jobID}}/data.csv
 Authorization: Bearer {{token}}
 Accept: application/json

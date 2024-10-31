@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "boto3>=1.35.40",
+    "cwltool==3.1.20240112164112",
     "fastapi>=0.115.2",
     "fsspec>=2024.9.0",
     "ipykernel>=6.29.5",
@@ -19,6 +20,7 @@ dependencies = [
     "s3fs>=0.4.2",
     "shapely>=2.0.6",
     "shortuuid>=1.0.13",
+    "toil>=6.1.0",
     "uvicorn>=0.31.1",
     "xarray>=2024.9.0",
 ]
