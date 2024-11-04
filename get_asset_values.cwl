@@ -1,7 +1,7 @@
 cwlVersion: v1.2
 $graph:
   - class: Workflow
-    id: lst-csv
+    id: lst-current
     label: get asset values
     doc: get asset values
     requirements:

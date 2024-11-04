@@ -8,7 +8,7 @@
 @executeStatus = {{executeProcess.response.headers.Location}}
 
 
-@processName = lst-csv
+@processName = lst-current
 
 
 
