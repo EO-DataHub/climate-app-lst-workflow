@@ -1,7 +1,7 @@
 {
     "inputs": {
         "workspace": "sparkgeouser",
-        "json_file": "sparkgeouser/uk_points.geojson",
+        "json_file": "arn:aws:s3:eu-west-2:312280911266:accesspoint/eodhp-test-gstjkhpo-sparkgeouser-s3/sparkgeouser/points.json",
         "stac_query": "{'stac_catalog': 'https://test.eodatahub.org.uk/api/catalogue/stac/catalogs/user-datasets/sparkgeouser/processing-results/cat_f99e920a-a58e-11ef-aab0-7a33b70d8782','start_date': '2024-02-01','end_date': '2024-02-03','collection': 'col_f99e920a-a58e-11ef-aab0-7a33b70d8782','max_items': 20}"
     }
 }

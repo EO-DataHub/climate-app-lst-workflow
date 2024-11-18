@@ -164,11 +164,8 @@ def download_points_file(args, temp_file: str) -> dict:
     Returns:
         dict: The JSON content loaded from the downloaded file.
     """
+    logger.info("Downloading points file")
     s3 = boto3.client("s3")
-    bucket_arn = (
-        "arn:aws:s3:eu-west-2:312280911266:accesspoint/"
-        "eodhp-test-gstjkhpo-sparkgeouser-s3"
-    )
     file_name = args.json_file
     if file_name.startswith("http"):
         logger.info(f"Downloading {file_name} using http...")
@@ -176,18 +173,26 @@ def download_points_file(args, temp_file: str) -> dict:
         temp_file.write(response.text)
         temp_file.close()
         arg_points_json = load_json_from_file(temp_file.name)
-    else:
-        logger.info(f"Downloading {file_name} from {bucket_arn}...")
+    elif file_name.startswith("arn:aws"):
+        logger.info(f"Downloading {file_name} from S3...")
+        file_parts = file_name.split("/")
+        bucket_arn = file_parts[0]
+        file_path_without_arn = "/".join(file_parts[1:])
         base_name = os.path.basename(file_name)
         # Use pathlib.Path to get the name without suffix
-        s3.download_file(bucket_arn, file_name, base_name)
+        s3.download_file(bucket_arn, file_path_without_arn, base_name)
         arg_points_json = load_json_from_file(base_name)
+    else:
+        logger.error("Invalid file path or URL")
+        raise RuntimeError("Invalid file path or URL")
     return arg_points_json
 
 
 if __name__ == "__main__":
+    logger.info("Starting the workflow")
     args = parse_arguments()
     stac_query = process_stac_query_args(args.stac_query)
+    logger.debug("STAC query: %s", stac_query)
 
     stac_items = search_stac(
         time_range=stac_query["time_range"],
@@ -196,14 +201,18 @@ if __name__ == "__main__":
         collection=stac_query["collection"],
         max_items=stac_query["max_items"],
     )
+    logger.debug("STAC items: %s", stac_items)
 
     # create a temporary file to store the points
     temp_file = tempfile.NamedTemporaryFile(mode="w", delete=False)
     try:
+        logger.info("Downloading points file")
         arg_points_json = download_points_file(args, temp_file)
+        logger.debug("Points JSON: %s", arg_points_json)
     except RuntimeError as e:
         logger.error(e)
         sys.exit(1)
+    logger.info("Processing request")
     process_response = process_request(
         points_json=arg_points_json,
         stac_items=stac_items,
