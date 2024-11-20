@@ -4,6 +4,7 @@ retrieving specific assets such as COG (Cloud Optimized GeoTIFF) URLs.
 """
 
 import json
+import os
 from pathlib import Path
 
 import requests
@@ -25,8 +26,10 @@ def get_stac_item(url: str) -> dict:
     - dict: The STAC item loaded as a dictionary.
     """
     try:
+        token = os.environ.get("STAC_API_KEY")
+        headers = {"Authorization": f"Bearer {token}"}
         logger.debug(f"Attempting to open URL: {url}")
-        with requests.get(url) as f:
+        with requests.get(url, headers=headers) as f:
             try:
                 logger.debug(f"Successfully opened URL: {url}")
                 stac_item = f.json()
@@ -74,6 +77,7 @@ def get_cog_details(stac_item: dict) -> dict:
             if found. None otherwise.
     """
     # TODO: Get this to work with multiple assets including zarr files
+    logger.debug(f"STAC item: {stac_item}")
     logger.info("Getting COG details")
     for asset in stac_item["assets"]:
         media_type = stac_item["assets"][asset]["type"]

@@ -17,6 +17,8 @@ $graph:
       stac_query:
         type: string
         doc: 
+      token:
+        type: string
     outputs:
       - id: asset-result
         type: Directory
@@ -28,6 +30,7 @@ $graph:
         in:
           json_file: json_file
           stac_query: stac_query
+          token: token
         out:
           - asset-result
   - class: CommandLineTool
@@ -36,7 +39,7 @@ $graph:
         NetworkAccess:
             networkAccess: true
         DockerRequirement:
-            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:filter4
+            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:filter10
     baseCommand: main.py
     inputs:
         json_file:
@@ -51,6 +54,12 @@ $graph:
                 prefix: --stac_query=
                 separate: false
                 position: 5
+        token:
+            type: string
+            inputBinding:
+                prefix: --token=
+                separate: false
+                position: 6
     outputs:
         asset-result:
             type: Directory

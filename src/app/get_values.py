@@ -2,13 +2,17 @@
 Functions to get values from a cog file
 """
 
+import rasterio as rio
+import rioxarray as rxr
 import xarray as xr
 from dateutil.parser import parse
 from get_values_logger import logger
-from load_cogs import load_cog
 from pyproj import Transformer
+from rasterio.session import AWSSession
 from shortuuid import ShortUUID
 from stac_parsing import get_cog_details, get_stac_item
+
+aws_session = AWSSession(aws_unsigned=True)
 
 
 def get_values(cog_url: str, points: xr.Dataset) -> list:
@@ -24,24 +28,25 @@ def get_values(cog_url: str, points: xr.Dataset) -> list:
     replacing NaNs with None.
     """
     logger.info("Getting values from COG file")
-    ds = load_cog(cog_url)
-    ds_crs = ds.rio.crs
-    if ds_crs == "EPSG:4326":
-        points_transformed = points
-    else:
-        transformer = Transformer.from_crs("EPSG:4326", ds_crs, always_xy=True)
-        x_t, y_t = transformer.transform(points.x, points.y)  # pylint: disable=E0633
-        points_transformed = xr.Dataset(
-            {"x": (["points"], x_t), "y": (["points"], y_t)},
+    with rio.Env(aws_session), rxr.open_rasterio(cog_url, mask_and_scale=True) as ds:
+        ds.attrs["file_path"] = cog_url
+        ds_crs = ds.rio.crs
+        if ds_crs == "EPSG:4326":
+            points_transformed = points
+        else:
+            transformer = Transformer.from_crs("EPSG:4326", ds_crs, always_xy=True)
+            x_t, y_t = transformer.transform(points.x, points.y)  # pylint: disable=E0633
+            points_transformed = xr.Dataset(
+                {"x": (["points"], x_t), "y": (["points"], y_t)},
+            )
+        values = (
+            ds.sel(x=points_transformed.x, y=points_transformed.y, method="nearest")
+            .values[0]
+            .tolist()
         )
-    values = (
-        ds.sel(x=points_transformed.x, y=points_transformed.y, method="nearest")
-        .values[0]
-        .tolist()
-    )
-    # replace nan with None
-    values = [None if str(v) == "nan" else v for v in values]
-    return values
+        # replace nan with None
+        values = [None if str(v) == "nan" else v for v in values]
+        return values
 
 
 def get_values_from_stac(stac_url: list[str], points: xr.Dataset) -> dict:

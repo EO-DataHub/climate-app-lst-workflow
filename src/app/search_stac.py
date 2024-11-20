@@ -20,14 +20,12 @@ def create_header() -> dict:
     Returns:
         dict: A dictionary containing the authorization header.
     """
-    token = os.getenv("TOKEN")
+    token = os.environ.get("STAC_API_KEY")
     headers = {"Authorization": f"Bearer {token}"}
     return headers
 
 
-def open_catalog(
-    catalog_url: str = "https://test.eodatahub.org.uk/api/catalogue/stac/catalogs/user-datasets/sparkgeouser/processing-results/cat_5e389b44-96ca-11ef-bd91-bed226a75fc2",
-) -> pystac_client.Client:
+def open_catalog(catalog_url: str) -> pystac_client.Client:
     """
     Opens a STAC catalog with the provided URL and authorization headers.
 
@@ -44,6 +42,28 @@ def open_catalog(
         headers=headers,
     )
     return catalog
+
+
+def query_to_filter(query: dict) -> dict:
+    """
+    Converts a query dictionary into a CQL2 JSON filter.
+
+    Args:
+        query (dict): A dictionary where keys are property names and
+        values are the desired values.
+
+    Returns:
+        dict: A CQL2 JSON filter combining all conditions with an 'and' operator.
+    """
+    filters = []
+    for key, value in query.items():
+        filters.append(
+            {
+                "op": "=",
+                "args": [{"property": f"properties.{key}"}, value],
+            }
+        )
+    return {"op": "and", "args": filters}
 
 
 def search_catalog(
@@ -65,7 +85,8 @@ def search_catalog(
     logger.info(
         f"Searching catalog for items with time range {time_range} and query {query}"
     )
-    search_params = {"datetime": time_range, "query": query}
+    cq2_filter = query_to_filter(query)
+    search_params = {"datetime": time_range, "filter": cq2_filter}
     if collection:
         search_params["collections"] = [collection]
     if max_items:
@@ -147,6 +168,7 @@ def search_stac(
     Returns:
         list: A list of dictionaries with datetime keys and asset href values.
     """
+    logger.info(f"TYPE: {type(query)}")
     catalog = open_catalog(catalog_url=catalog_url)
     search = search_catalog(
         catalog,
