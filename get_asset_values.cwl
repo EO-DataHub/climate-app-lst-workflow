@@ -11,9 +11,21 @@ $graph:
       NetworkAccess:
         networkAccess: true
     inputs:
-      json_file:
+      assets:
         type: string
-        doc: JSON file with points data
+        doc: GeoJSON file with points data
+      stac_catalog:
+        type: string
+        doc: STAC catalog to search
+      start_date:
+        type: string
+        doc: start date to start the STAC search from
+      end_date:
+        type: string
+        doc: end date for STAC search
+      stac_collection:
+        type: string
+        doc: STAC collection to search
       stac_query:
         type: string
         doc: 
@@ -28,7 +40,11 @@ $graph:
       get-values:
         run: "#get-asset-values"
         in:
-          json_file: json_file
+          assets: assets
+          stac_catalog: stac_catalog
+          start_date: start_date
+          end_date: end_date
+          stac_collection: stac_collection
           stac_query: stac_query
           token: token
         out:
@@ -39,19 +55,43 @@ $graph:
         NetworkAccess:
             networkAccess: true
         DockerRequirement:
-            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:filter10
+            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:filter11
     baseCommand: main.py
     inputs:
-        json_file:
+        assets:
             type: string
             inputBinding:
-                prefix: --json_file=
+                prefix: --assets=
                 separate: false
                 position: 4
         stac_query:
             type: string
             inputBinding:
                 prefix: --stac_query=
+                separate: false
+                position: 5
+        stac_catalog:
+            type: string
+            inputBinding:
+                prefix: --stac_catalog=
+                separate: false
+                position: 5
+        start_date:
+            type: string
+            inputBinding:
+                prefix: --start_date=
+                separate: false
+                position: 5
+        end_date:
+            type: string
+            inputBinding:
+                prefix: --end_date=
+                separate: false
+                position: 5
+        stac_collection:
+            type: string
+            inputBinding:
+                prefix: --stac_collection=
                 separate: false
                 position: 5
         token:

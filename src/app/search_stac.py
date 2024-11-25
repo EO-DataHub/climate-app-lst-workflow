@@ -203,19 +203,8 @@ def process_stac_query_args(stac_query: str) -> dict:
                 query_dict = ast.literal_eval(stac_query)
             except ValueError as e:
                 raise ValueError(f"Invalid stac_query format: {e}") from e
-        stac_catalog = query_dict.pop("stac_catalog")
-        start_date = query_dict.pop("start_date")
-        end_date = query_dict.pop("end_date")
-        collection = query_dict.pop("collection")
-        time_range = f"{start_date}/{end_date}"
-        max_items = query_dict.pop("max_items", None)
-        return {
-            "stac_catalog": stac_catalog,
-            "time_range": time_range,
-            "collection": collection,
-            "query": query_dict,
-            "max_items": max_items,
-        }
+
+        return query_dict
     except json.JSONDecodeError as exc:
         raise RuntimeError("Failed to decode the STAC query string") from exc
 

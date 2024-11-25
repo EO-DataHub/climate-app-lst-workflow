@@ -91,12 +91,19 @@ def parse_arguments():
     """
     logger.info("Parsing command-line arguments")
     parser = argparse.ArgumentParser(description="Make a request.")
-    parser.add_argument("--json_file", type=str, help="GeoJSON string with points data")
+    parser.add_argument("--assets", type=str, help="GeoJSON string with points data")
     parser.add_argument(
         "--stac_query", type=str, help="Query to pass to stac", default=None
     )
     parser.add_argument(
         "--token", type=str, help="Token to authenticate to STAC catalog", default=None
+    )
+    parser.add_argument("--stac_catalog", type=str, help="STAC catalog URL")
+    parser.add_argument("--stac_collection", type=str, help="STAC collection ID")
+    parser.add_argument("--start_date", type=str, help="Start date for STAC search")
+    parser.add_argument("--end_date", type=str, help="End date for STAC search")
+    parser.add_argument(
+        "--max_items", type=int, help="Maximum number of items to return", default=None
     )
     return parser.parse_args()
 
@@ -178,7 +185,7 @@ def download_points_file(args, temp_file: str) -> dict:
         "arn:aws:s3:eu-west-2:312280911266:accesspoint/"
         "eodhp-test-gstjkhpo-sparkgeouser-s3"
     )
-    file_name = args.json_file
+    file_name = args.assets
     if file_name.startswith("http"):
         logger.info(f"Downloading {file_name} using http...")
         response = requests.get(file_name)
@@ -201,14 +208,16 @@ if __name__ == "__main__":
     os.environ["STAC_API_KEY"] = args.token
 
     stac_query = process_stac_query_args(args.stac_query)
-    logger.debug("STAC query: %s", stac_query)
+    # logger.debug("STAC query: %s", stac_query)
+
+    time_range = f"{args.start_date}/{args.end_date}"
 
     stac_items = search_stac(
-        time_range=stac_query["time_range"],
-        query=stac_query["query"],
-        catalog_url=stac_query["stac_catalog"],
-        collection=stac_query["collection"],
-        max_items=stac_query["max_items"],
+        time_range=time_range,
+        query=stac_query,
+        catalog_url=args.stac_catalog,
+        collection=args.stac_collection,
+        max_items=args.max_items,
     )
     logger.debug("STAC items: %s", stac_items)
 
