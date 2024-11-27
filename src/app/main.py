@@ -181,10 +181,7 @@ def download_points_file(args, temp_file: str) -> dict:
         dict: The JSON content loaded from the downloaded file.
     """
     s3 = boto3.client("s3")
-    bucket_arn = (
-        "arn:aws:s3:eu-west-2:312280911266:accesspoint/"
-        "eodhp-test-gstjkhpo-sparkgeouser-s3"
-    )
+
     file_name = args.assets
     if file_name.startswith("http"):
         logger.info(f"Downloading {file_name} using http...")
@@ -193,8 +190,14 @@ def download_points_file(args, temp_file: str) -> dict:
         temp_file.close()
         arg_points_json = load_json_from_file(temp_file.name)
     else:
-        logger.info(f"Downloading {file_name} from {bucket_arn}...")
         base_name = os.path.basename(file_name)
+        user = file_name.split("/")[0]
+        bucket_arn = (
+            "arn:aws:s3:eu-west-2:312280911266:accesspoint/"
+            f"eodhp-test-gstjkhpo-{user}-s3"
+        )
+        logger.info(f"Downloading {file_name} from {bucket_arn}...")
+
         # Use pathlib.Path to get the name without suffix
         s3.download_file(bucket_arn, file_name, base_name)
         arg_points_json = load_json_from_file(base_name)
