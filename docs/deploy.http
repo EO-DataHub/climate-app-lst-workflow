@@ -10,16 +10,14 @@
 
 @jobid = {{getExecuteStatus.response.body.jobID}}
 
-@processName = lst-current
-
-
+@processName = lst-filter
 
 
 ###
 
 # @name listProcesses
 GET {{scheme}}://{{ades}}/{{username}}/ogc-api/processes HTTP/1.1
-Authorization: Bearer {{token}}
+Authorization: Bearer {{geodowd_token}}
 Accept: application/json
 
 ###
@@ -28,6 +26,17 @@ Accept: application/json
 DELETE {{scheme}}://{{ades}}/{{username}}/ogc-api/processes/{{processName}} HTTP/1.1
 Authorization: Bearer {{token}}
 Accept: application/json
+
+###
+
+# @name updateProcessJson
+PUT {{scheme}}://{{ades}}/{{username}}/ogc-api/processes/{{processName}} HTTP/1.1
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/cwl+yaml
+
+< ../get_asset_values.cwl
+
 
 ###
 

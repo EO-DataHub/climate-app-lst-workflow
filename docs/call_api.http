@@ -8,8 +8,7 @@
 @executeStatus = {{executeProcess.response.headers.Location}}
 
 
-@processName = lst-current
-
+@processName = lst-filter
 
 
 ###
@@ -41,7 +40,7 @@ Accept: application/json
 Content-Type: application/json
 Prefer: respond-async
 
-< /Users/sgdowd/Documents/1_EODH/values_from_cogs2/docs/workflow_input.json
+< workflow_input_s3.json
 
 ###
 

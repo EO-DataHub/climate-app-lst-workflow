@@ -1,16 +1,37 @@
 cwlVersion: v1.2
 $graph:
   - class: Workflow
-    id: lst-current
-    label: get asset values
-    doc: get asset values
+    id: lst-filter
+    label: Land Surface Temperature (LST)
+    doc: >
+      The Land Surface Temperature workflow will report on observed land surface temperature observations from your assets.
+
+      This workflow requires the following columns: ID, latitude, longitude.
+
     requirements:
       NetworkAccess:
         networkAccess: true
     inputs:
-      json_string:
+      assets:
         type: string
-        doc: JSON string with points data
+        doc: GeoJSON file with points data
+      stac_catalog:
+        type: string
+        doc: STAC catalog to search
+      start_date:
+        type: string
+        doc: start date to start the STAC search from
+      end_date:
+        type: string
+        doc: end date for STAC search
+      stac_collection:
+        type: string
+        doc: STAC collection to search
+      stac_query:
+        type: string
+        doc: 
+      token:
+        type: string
     outputs:
       - id: asset-result
         type: Directory
@@ -20,7 +41,13 @@ $graph:
       get-values:
         run: "#get-asset-values"
         in:
-          json_string: json_string
+          assets: assets
+          stac_catalog: stac_catalog
+          start_date: start_date
+          end_date: end_date
+          stac_collection: stac_collection
+          stac_query: stac_query
+          token: token
         out:
           - asset-result
   - class: CommandLineTool
@@ -29,15 +56,51 @@ $graph:
         NetworkAccess:
             networkAccess: true
         DockerRequirement:
-            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:csv5
+            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:filter12
     baseCommand: main.py
     inputs:
-        json_string:
+        assets:
             type: string
             inputBinding:
-                prefix: --json_string=
+                prefix: --assets=
                 separate: false
                 position: 4
+        stac_query:
+            type: string
+            inputBinding:
+                prefix: --stac_query=
+                separate: false
+                position: 5
+        stac_catalog:
+            type: string
+            inputBinding:
+                prefix: --stac_catalog=
+                separate: false
+                position: 5
+        start_date:
+            type: string
+            inputBinding:
+                prefix: --start_date=
+                separate: false
+                position: 5
+        end_date:
+            type: string
+            inputBinding:
+                prefix: --end_date=
+                separate: false
+                position: 5
+        stac_collection:
+            type: string
+            inputBinding:
+                prefix: --stac_collection=
+                separate: false
+                position: 5
+        token:
+            type: string
+            inputBinding:
+                prefix: --token=
+                separate: false
+                position: 6
     outputs:
         asset-result:
             type: Directory
