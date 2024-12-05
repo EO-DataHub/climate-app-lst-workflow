@@ -7,6 +7,7 @@ $graph:
       The Land Surface Temperature workflow will report on observed land surface temperature observations from your assets.
 
       This workflow requires the following columns: ID, latitude, longitude.
+
     requirements:
       NetworkAccess:
         networkAccess: true
