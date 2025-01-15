@@ -27,7 +27,7 @@
             "program": "${workspaceFolder}/src/main.py",
             "args": [
                 "--assets",
-                "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_polygons.geojson",
+                "https://lst-cogs.s3.eu-west-1.amazonaws.com/eocis_test_polygons.geojson",
                 "--stac_catalog",
                 "https://eocis.org/stac/",
                 "--start_date",

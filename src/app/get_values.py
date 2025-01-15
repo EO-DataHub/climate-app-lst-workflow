@@ -3,12 +3,11 @@ Functions to get values from a cog file
 """
 
 import geopandas as gpd
-import pandas as pd
 import rasterio as rio
 import xarray as xr
 from pyproj import Transformer
-from rasterio import features
 from rasterio.session import AWSSession
+from shapely.geometry import mapping
 
 from app.asset_data import AssetData
 from app.create_dataarray import DatasetDataArray
@@ -80,22 +79,24 @@ def get_values_polygons(
     if ds_crs and ds_crs != "EPSG:4326":
         logger.info("Transforming polygons to dataset CRS")
         polygons_gdf = polygons_gdf.to_crs(ds_crs)
-    polygons_gdf["temp_id"] = range(1, len(polygons_gdf) + 1)
-    geometries = polygons_gdf[["geometry", "temp_id"]].values.tolist()
     datasource_array = datasource_array.squeeze()
-    rasterized_fields = features.rasterize(
-        geometries,
-        out_shape=datasource_array.shape,
-        transform=datasource_array.rio.transform(),
-        fill=-999,
-    )
-    rasterized_xarray = datasource_array.copy(data=rasterized_fields)
-    mean_values = datasource_array.groupby(rasterized_xarray).mean()
-    mean_values.name = "mean"
-    mean_df = mean_values.to_dataframe().reset_index()
-    mean_df = mean_df[mean_df["group"] != -999]
-    mean_list = mean_df["mean"].to_list()
-    return [None if pd.isna(value) else value for value in mean_list]
+    results = []
+    means = []
+    for _, row in polygons_gdf.iterrows():
+        minx, miny, maxx, maxy = row.geometry.bounds
+        bbox_rds = datasource_array.rio.clip_box(
+            minx=minx, miny=miny, maxx=maxx, maxy=maxy
+        )
+        clipped = bbox_rds.rio.clip([mapping(row.geometry)], polygons_gdf.crs)
+        stats_dict = {
+            "mean": clipped.mean().item(),
+            "max": clipped.max().item(),
+            "min": clipped.min().item(),
+        }
+        results.append(stats_dict)
+        means.append(clipped.mean().item())
+    means = [None if str(v) == "nan" else v for v in means]
+    return means
 
 
 def get_values_for_multiple_datasets(
