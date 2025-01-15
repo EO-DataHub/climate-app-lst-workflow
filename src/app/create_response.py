@@ -1,11 +1,12 @@
+import csv
 import datetime as dt
 import json
 import mimetypes
 import os
 import time
+from datetime import datetime
 from pathlib import Path
 
-import pandas as pd
 from dateutil.parser import parse
 from shortuuid import ShortUUID
 
@@ -137,31 +138,41 @@ class WorkflowResponse:
         process_response (dict): The input JSON data.
         out_csv (str): The output CSV file path.
         """
-        try:
-            data = []
-            for feature in self.process_response.get("features", []):
-                feature_id = feature["properties"]["id"]
-                for dt, values in feature["properties"]["returned_values"].items():
-                    data.append(
-                        {"id": feature_id, "datetime": dt, "value": values.get("value")}
+        all_keys = set()
+        data = self.process_response.get("features", [])
+        for feature in data:
+            all_keys.update(feature["properties"].keys())
+            all_keys.discard("returned_values")
+            csv_columns = list(all_keys) + ["date", "value"]
+            csv_data = []
+            for feature in data:
+                properties = feature["properties"]
+
+                # Extract all properties dynamically
+                base_info = {key: properties.get(key, None) for key in all_keys}
+
+                # Extract returned values
+                for _, values in properties["returned_values"].items():
+                    date_str = (
+                        datetime.strptime(values["datetime"], "%Y-%m-%dT%H:%M:%SZ")
+                        .date()
+                        .isoformat()
                     )
+                    value = values["value"]
 
-            df = pd.DataFrame(data)
-            logger.info("CSV File data: %s", df)
-            pivot_df = df.pivot_table(index="id", columns="datetime", values="value")
-            pivot_df.reset_index(inplace=True)
-
-            # Ensure all datetime columns are included
-            all_datetimes = sorted(df["datetime"].unique())
-            pivot_df = pivot_df.reindex(columns=["id"] + all_datetimes, fill_value=None)
-
-            pivot_df = pivot_df.astype(object).where(pd.notnull(pivot_df), None)
-            pivot_df.fillna("null", inplace=True)
-            pivot_df.to_csv("./data.csv", index=False)
-            logger.info("CSV file successfully created at %s", "./data.csv")
-        except Exception as e:
-            logger.error("An error occurred: %s", e)
-            raise
+                    # Append a row to csv_data
+                    csv_data.append(
+                        {
+                            **base_info,
+                            "date": date_str,
+                            "value": "null" if value is None else value,
+                        }
+                    )
+            csv_filename = "./data.csv"
+            with open(csv_filename, mode="w", newline="") as file:
+                writer = csv.DictWriter(file, fieldnames=csv_columns)
+                writer.writeheader()
+                writer.writerows(csv_data)
 
     def create_error_response(self) -> dict:
         """
