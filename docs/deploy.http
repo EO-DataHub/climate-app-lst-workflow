@@ -17,7 +17,7 @@
 
 # @name listProcesses
 GET {{scheme}}://{{ades}}/{{username}}/ogc-api/processes HTTP/1.1
-Authorization: Bearer {{geodowd_token}}
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ###
