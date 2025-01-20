@@ -99,6 +99,43 @@ def get_values_polygons(
     return means
 
 
+def get_values_lines(
+    datasource_array: DatasetDataArray, lines_gdf: gpd.GeoDataFrame
+) -> list:
+    """
+    Extracts values from a raster dataset for specified line strings.
+
+    Parameters:
+    - raster_dataset (DatasetDataArray): The raster dataset to extract values from.
+    - lines_gdf (gpd.GeoDataFrame): GeoDataFrame containing line strings of interest.
+
+    Returns:
+    list: A list of mean values for each line string.
+    """
+    ds_crs = datasource_array.rio.crs
+    if ds_crs and ds_crs != "EPSG:4326":
+        logger.info("Transforming lines to dataset CRS")
+        lines_gdf = lines_gdf.to_crs(ds_crs)
+    datasource_array = datasource_array.squeeze()
+    results = []
+    means = []
+    for _, row in lines_gdf.iterrows():
+        minx, miny, maxx, maxy = row.geometry.bounds
+        bbox_rds = datasource_array.rio.clip_box(
+            minx=minx, miny=miny, maxx=maxx, maxy=maxy
+        )
+        clipped = bbox_rds.rio.clip([mapping(row.geometry)], lines_gdf.crs)
+        stats_dict = {
+            "mean": clipped.mean().item(),
+            "max": clipped.max().item(),
+            "min": clipped.min().item(),
+        }
+        results.append(stats_dict)
+        means.append(clipped.mean().item())
+    means = [None if str(v) == "nan" else v for v in means]
+    return means
+
+
 def get_values_for_multiple_datasets(
     dataset_details_list: list[DatasetDetails],
     assets: AssetData,
@@ -118,25 +155,29 @@ def get_values_for_multiple_datasets(
     """
     logger.debug("Getting values from multiple files")
     return_values = []
-    if assets.geometry_type == "Point":
-        assets = assets.point_to_xr_dataset()
+
+    geometry_type_to_function = {
+        "Point": get_values_points,
+        "Polygon": get_values_polygons,
+        "LineString": get_values_lines,
+    }
+    geometry_type = assets.geometry_type
+
+    if geometry_type in geometry_type_to_function:
+        if geometry_type == "Point":
+            assets = assets.point_to_xr_dataset()
+        else:
+            assets = assets.gdf
+
         for dataset_details in dataset_details_list:
             logger.info("Getting values from multiple datasets")
             dataset_array = DatasetDataArray(
                 dataset_details=dataset_details, extra_args=extra_args
             ).ds
-            result = get_values_points(datasource_array=dataset_array, points=assets)
-            return_values.append({"asset_details": dataset_details, "values": result})
-        return return_values
-    if assets.geometry_type == "Polygon":
-        assets = assets.gdf
-        for dataset_details in dataset_details_list:
-            logger.info("Getting values from multiple datasets")
-            dataset_array = DatasetDataArray(
-                dataset_details=dataset_details, extra_args=extra_args
-            ).ds
-            result = get_values_polygons(
-                datasource_array=dataset_array, polygons_gdf=assets
+            result = geometry_type_to_function[geometry_type](
+                datasource_array=dataset_array,
+                points=assets if geometry_type == "Point" else assets,
             )
             return_values.append({"asset_details": dataset_details, "values": result})
-        return return_values
+
+    return return_values
