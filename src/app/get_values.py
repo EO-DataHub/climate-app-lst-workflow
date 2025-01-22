@@ -17,13 +17,13 @@ from app.stac_parsing import DatasetDetails
 aws_session = AWSSession(aws_unsigned=True)
 
 
-def get_values_points(datasource_array: xr.DataArray, points: xr.Dataset) -> list:
+def get_values_points(datasource_array: xr.DataArray, assets: xr.Dataset) -> list:
     """
     Extracts values from a COG file for specified points.
 
     Parameters:
     - ds (xr.DataArray): Data array to extract values from.
-    - points (xr.Dataset): Dataset containing points of interest.
+    - assets (xr.Dataset): Dataset containing points of interest.
 
     Returns:
     list: A list containing the file path and extracted values,
@@ -35,8 +35,8 @@ def get_values_points(datasource_array: xr.DataArray, points: xr.Dataset) -> lis
         if ds_crs != "EPSG:4326":
             logger.info("Transforming points to dataset CRS")
             transformer = Transformer.from_crs("EPSG:4326", ds_crs, always_xy=True)
-            x_t, y_t = transformer.transform(points.x, points.y)  # pylint: disable=E0633
-            points = xr.Dataset(
+            x_t, y_t = transformer.transform(assets.x, assets.y)  # pylint: disable=E0633
+            assets = xr.Dataset(
                 {"x": (["points"], x_t), "y": (["points"], y_t)},
             )
         index_keys = list(datasource_array._indexes.keys())
@@ -44,14 +44,14 @@ def get_values_points(datasource_array: xr.DataArray, points: xr.Dataset) -> lis
         if "lat" in index_keys and "lon" in index_keys:
             logger.info("Using lat and lon as indexes")
             values = (
-                datasource_array.sel(lat=points.y, lon=points.x, method="nearest")
+                datasource_array.sel(lat=assets.y, lon=assets.x, method="nearest")
                 .values[0]
                 .tolist()
             )
         elif "y" in index_keys and "x" in index_keys:
             logger.info("Using y and x as indexes")
             values = (
-                datasource_array.sel(x=points.x, y=points.y, method="nearest")
+                datasource_array.sel(x=assets.x, y=assets.y, method="nearest")
                 .values[0]
                 .tolist()
             )
@@ -63,14 +63,14 @@ def get_values_points(datasource_array: xr.DataArray, points: xr.Dataset) -> lis
 
 
 def get_values_polygons(
-    datasource_array: DatasetDataArray, polygons_gdf: gpd.GeoDataFrame
+    datasource_array: DatasetDataArray, assets: gpd.GeoDataFrame
 ) -> list:
     """
     Extracts values from a raster dataset for specified polygons.
 
     Parameters:
     - raster_dataset (DatasetDataArray): The raster dataset to extract values from.
-    - polygons_gdf (gpd.GeoDataFrame): GeoDataFrame containing polygons of interest.
+    - assets (gpd.GeoDataFrame): GeoDataFrame containing polygons of interest.
 
     Returns:
     list: A list of mean values for each polygon.
@@ -78,16 +78,16 @@ def get_values_polygons(
     ds_crs = datasource_array.rio.crs
     if ds_crs and ds_crs != "EPSG:4326":
         logger.info("Transforming polygons to dataset CRS")
-        polygons_gdf = polygons_gdf.to_crs(ds_crs)
+        assets = assets.to_crs(ds_crs)
     datasource_array = datasource_array.squeeze()
     results = []
     means = []
-    for _, row in polygons_gdf.iterrows():
+    for _, row in assets.iterrows():
         minx, miny, maxx, maxy = row.geometry.bounds
         bbox_rds = datasource_array.rio.clip_box(
             minx=minx, miny=miny, maxx=maxx, maxy=maxy
         )
-        clipped = bbox_rds.rio.clip([mapping(row.geometry)], polygons_gdf.crs)
+        clipped = bbox_rds.rio.clip([mapping(row.geometry)], assets.crs)
         stats_dict = {
             "mean": clipped.mean().item(),
             "max": clipped.max().item(),
@@ -100,14 +100,14 @@ def get_values_polygons(
 
 
 def get_values_lines(
-    datasource_array: DatasetDataArray, lines_gdf: gpd.GeoDataFrame
+    datasource_array: DatasetDataArray, assets: gpd.GeoDataFrame
 ) -> list:
     """
     Extracts values from a raster dataset for specified line strings.
 
     Parameters:
     - raster_dataset (DatasetDataArray): The raster dataset to extract values from.
-    - lines_gdf (gpd.GeoDataFrame): GeoDataFrame containing line strings of interest.
+    - assets (gpd.GeoDataFrame): GeoDataFrame containing line strings of interest.
 
     Returns:
     list: A list of mean values for each line string.
@@ -115,16 +115,16 @@ def get_values_lines(
     ds_crs = datasource_array.rio.crs
     if ds_crs and ds_crs != "EPSG:4326":
         logger.info("Transforming lines to dataset CRS")
-        lines_gdf = lines_gdf.to_crs(ds_crs)
+        assets = assets.to_crs(ds_crs)
     datasource_array = datasource_array.squeeze()
     results = []
     means = []
-    for _, row in lines_gdf.iterrows():
+    for _, row in assets.iterrows():
         minx, miny, maxx, maxy = row.geometry.bounds
         bbox_rds = datasource_array.rio.clip_box(
             minx=minx, miny=miny, maxx=maxx, maxy=maxy
         )
-        clipped = bbox_rds.rio.clip([mapping(row.geometry)], lines_gdf.crs)
+        clipped = bbox_rds.rio.clip([mapping(row.geometry)], assets.crs)
         stats_dict = {
             "mean": clipped.mean().item(),
             "max": clipped.max().item(),
@@ -176,7 +176,7 @@ def get_values_for_multiple_datasets(
             ).ds
             result = geometry_type_to_function[geometry_type](
                 datasource_array=dataset_array,
-                points=assets if geometry_type == "Point" else assets,
+                assets=assets,
             )
             return_values.append({"asset_details": dataset_details, "values": result})
 

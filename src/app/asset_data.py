@@ -66,11 +66,8 @@ class AssetData:
             data = self.load_json_from_file(temp_file.name)
             gdf = gpd.read_file(temp_file.name)
         else:
-            user = self.source.split("/")[0]
-            bucket_arn = (
-                "arn:aws:s3:eu-west-2:312280911266:accesspoint/"
-                f"eodhp-test-gstjkhpo-{user}-s3"
-            )
+            base_name = os.path.basename(self.source)
+            bucket_arn = "workspaces-eodhp-test"
             logger.info(f"Downloading {self.source} from {bucket_arn}...")
 
             # Use pathlib.Path to get the name without suffix
