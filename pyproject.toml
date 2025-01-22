@@ -7,25 +7,19 @@ requires-python = ">=3.10"
 dependencies = [
     "aiohttp>=3.11.8",
     "boto3>=1.35.40",
-    "cwltool==3.1.20240112164112",
     "fastapi>=0.115.2",
     "fsspec>=2024.9.0",
     "geopandas>=1.0.1",
-    "ipykernel>=6.29.5",
     "kerchunk>=0.2.7",
     "matplotlib>=3.10.0",
     "pandas>=2.2.3",
-    "pre-commit>=4.0.1",
+    "pystac-client>=0.8.5",
     "pystac>=1.11.0",
-    "pytest>=8.3.3",
-    "requests>=2.32.3",
+    "requests==2.31.0",
     "rioxarray>=0.18.1",
-    "ruff>=0.6.9",
     "s3fs>=0.4.2",
     "shapely>=2.0.6",
     "shortuuid>=1.0.13",
-    "toil>=6.1.0",
-    "uvicorn>=0.31.1",
     "xarray==2024.11.0",
 ]
 
@@ -45,4 +39,10 @@ select = ["D103","E","F", "UP", "B","SIM","I",]
 [tool.uv]
 dev-dependencies = [
     "pytest>=8.3.3",
+    "ruff>=0.6.9",
+    "cwltool==3.1.20240508115724",
+    "ipykernel>=6.29.5",
+    "pre-commit>=4.0.1",
+    "pytest>=8.3.3",
+
 ]

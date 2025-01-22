@@ -1,12 +1,11 @@
-import csv
 import datetime as dt
 import json
 import mimetypes
 import os
 import time
-from datetime import datetime
 from pathlib import Path
 
+import geopandas as gpd
 from dateutil.parser import parse
 from shortuuid import ShortUUID
 
@@ -138,41 +137,18 @@ class WorkflowResponse:
         process_response (dict): The input JSON data.
         out_csv (str): The output CSV file path.
         """
-        all_keys = set()
         data = self.process_response.get("features", [])
-        for feature in data:
-            all_keys.update(feature["properties"].keys())
-            all_keys.discard("returned_values")
-            csv_columns = list(all_keys) + ["date", "value"]
-            csv_data = []
-            for feature in data:
-                properties = feature["properties"]
+        gdf = gpd.GeoDataFrame.from_features(data)
 
-                # Extract all properties dynamically
-                base_info = {key: properties.get(key, None) for key in all_keys}
+        def extract_datetime_values(row):
+            for key, val in row["returned_values"].items():
+                row[key] = val["value"] if val.get("value") else "none"
+            return row
 
-                # Extract returned values
-                for _, values in properties["returned_values"].items():
-                    date_str = (
-                        datetime.strptime(values["datetime"], "%Y-%m-%dT%H:%M:%SZ")
-                        .date()
-                        .isoformat()
-                    )
-                    value = values["value"]
-
-                    # Append a row to csv_data
-                    csv_data.append(
-                        {
-                            **base_info,
-                            "date": date_str,
-                            "value": "null" if value is None else value,
-                        }
-                    )
-            csv_filename = "./data.csv"
-            with open(csv_filename, mode="w", newline="") as file:
-                writer = csv.DictWriter(file, fieldnames=csv_columns)
-                writer.writeheader()
-                writer.writerows(csv_data)
+        gdf = gdf.apply(extract_datetime_values, axis=1)
+        gdf.drop(columns=["returned_values", "geometry"], inplace=True)
+        csv_filename = "./data.csv"
+        gdf.to_csv(csv_filename, index=False)
 
     def create_error_response(self) -> dict:
         """
@@ -217,9 +193,11 @@ class WorkflowResponse:
             else:
                 unit = result["asset_details"].unit
             if self.extra_args and "output_name" in self.extra_args:
+                logger.info("Output name: %s", self.extra_args["output_name"])
                 output_name = self.extra_args["output_name"]
                 output_name = eval(f"f'{output_name}'")
             else:
+                logger.info("using default output name")
                 output_name = datetime_string[:-9]
             logger.info("Output name: %s", output_name)
             for index, value in enumerate(result["values"]):

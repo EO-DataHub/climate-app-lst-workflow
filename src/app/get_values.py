@@ -2,11 +2,16 @@
 Functions to get values from a cog file
 """
 
+import ast
+import operator
+
 import geopandas as gpd
 import rasterio as rio
 import xarray as xr
+from aiohttp.client_exceptions import ClientResponseError
 from pyproj import Transformer
 from rasterio.session import AWSSession
+from rioxarray.exceptions import NoDataInBounds
 from shapely.geometry import mapping
 
 from app.asset_data import AssetData
@@ -43,18 +48,26 @@ def get_values_points(datasource_array: xr.DataArray, assets: xr.Dataset) -> lis
         logger.info(f"Index keys: {index_keys}")
         if "lat" in index_keys and "lon" in index_keys:
             logger.info("Using lat and lon as indexes")
-            values = (
-                datasource_array.sel(lat=assets.y, lon=assets.x, method="nearest")
-                .values[0]
-                .tolist()
-            )
+            try:
+                values = (
+                    datasource_array.sel(lat=assets.y, lon=assets.x, method="nearest")
+                    .values[0]
+                    .tolist()
+                )
+            except Exception as e:
+                logger.error(f"Error extracting values from points: {e}")
+                values = [None] * len(assets.x)
         elif "y" in index_keys and "x" in index_keys:
             logger.info("Using y and x as indexes")
-            values = (
-                datasource_array.sel(x=assets.x, y=assets.y, method="nearest")
-                .values[0]
-                .tolist()
-            )
+            try:
+                values = (
+                    datasource_array.sel(x=assets.x, y=assets.y, method="nearest")
+                    .values[0]
+                    .tolist()
+                )
+            except Exception as e:
+                logger.error(f"Error extracting values from points: {e}")
+                values = [None] * len(assets.x)
         else:
             logger.error("Unsupported index keys")
         # replace nan with None
@@ -81,22 +94,27 @@ def get_values_polygons(
         assets = assets.to_crs(ds_crs)
     datasource_array = datasource_array.squeeze()
     results = []
-    means = []
     for _, row in assets.iterrows():
         minx, miny, maxx, maxy = row.geometry.bounds
-        bbox_rds = datasource_array.rio.clip_box(
-            minx=minx, miny=miny, maxx=maxx, maxy=maxy
-        )
-        clipped = bbox_rds.rio.clip([mapping(row.geometry)], assets.crs)
-        stats_dict = {
-            "mean": clipped.mean().item(),
-            "max": clipped.max().item(),
-            "min": clipped.min().item(),
-        }
-        results.append(stats_dict)
-        means.append(clipped.mean().item())
-    means = [None if str(v) == "nan" else v for v in means]
-    return means
+        try:
+            bbox_rds = datasource_array.rio.clip_box(
+                minx=minx,
+                miny=miny,
+                maxx=maxx,
+                maxy=maxy,
+                allow_one_dimensional_raster=True,
+            )
+            clipped = bbox_rds.rio.clip([mapping(row.geometry)], assets.crs)
+            results.append(clipped.mean().item())
+        except ClientResponseError:
+            results.append("DataError")
+        except NoDataInBounds:
+            results.append(None)
+        except Exception as e:
+            logger.error(f"Error extracting values from polygon: {e}")
+            results.append(None)
+    results = [None if str(v) == "nan" else v for v in results]
+    return results
 
 
 def get_values_lines(
@@ -118,22 +136,60 @@ def get_values_lines(
         assets = assets.to_crs(ds_crs)
     datasource_array = datasource_array.squeeze()
     results = []
-    means = []
     for _, row in assets.iterrows():
         minx, miny, maxx, maxy = row.geometry.bounds
-        bbox_rds = datasource_array.rio.clip_box(
-            minx=minx, miny=miny, maxx=maxx, maxy=maxy
-        )
-        clipped = bbox_rds.rio.clip([mapping(row.geometry)], assets.crs)
-        stats_dict = {
-            "mean": clipped.mean().item(),
-            "max": clipped.max().item(),
-            "min": clipped.min().item(),
-        }
-        results.append(stats_dict)
-        means.append(clipped.mean().item())
-    means = [None if str(v) == "nan" else v for v in means]
-    return means
+        try:
+            bbox_rds = datasource_array.rio.clip_box(
+                minx=minx, miny=miny, maxx=maxx, maxy=maxy
+            )
+            clipped = bbox_rds.rio.clip([mapping(row.geometry)], assets.crs)
+            results.append(clipped.mean().item())
+        except NoDataInBounds:
+            results.append(None)
+        except ClientResponseError:
+            results.append("DataError")
+    results = [None if str(v) == "nan" else v for v in results]
+    return results
+
+
+def eval_expr(expr, value):
+    """
+    Safely evaluate a mathematical expression with a given value.
+    """
+    operators = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Pow: operator.pow,
+        ast.BitXor: operator.xor,
+        ast.USub: operator.neg,
+    }
+
+    def _eval(node):
+        if isinstance(node, ast.Constant):  # <number>
+            return node.value
+        elif isinstance(node, ast.BinOp):  # <left> <operator> <right>
+            return operators[type(node.op)](_eval(node.left), _eval(node.right))
+        elif isinstance(node, ast.UnaryOp):  # <operator> <operand> e.g., -1
+            return operators[type(node.op)](_eval(node.operand))
+        elif isinstance(node, ast.Name):
+            if node.id == "x":
+                return value
+            else:
+                raise ValueError(f"Unsupported variable: {node.id}")
+        elif (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "round"
+        ):
+            args = [_eval(arg) for arg in node.args]
+            return round(*args)
+        else:
+            raise TypeError(node)
+
+    node = ast.parse(expr, mode="eval").body
+    return _eval(node)
 
 
 def get_values_for_multiple_datasets(
@@ -166,18 +222,35 @@ def get_values_for_multiple_datasets(
     if geometry_type in geometry_type_to_function:
         if geometry_type == "Point":
             assets = assets.point_to_xr_dataset()
+            no_of_assets = len(assets.x)
         else:
             assets = assets.gdf
+            no_of_assets = len(assets)
 
         for dataset_details in dataset_details_list:
             logger.info("Getting values from multiple datasets")
-            dataset_array = DatasetDataArray(
-                dataset_details=dataset_details, extra_args=extra_args
-            ).ds
+            try:
+                dataset_array = DatasetDataArray(
+                    dataset_details=dataset_details, extra_args=extra_args
+                ).ds
+            except Exception as e:
+                logger.error(f"Error getting values for dataset: {e}")
+                values = [None] * no_of_assets
+                return_values.append(
+                    {"asset_details": dataset_details, "values": values}
+                )
+                continue
             result = geometry_type_to_function[geometry_type](
                 datasource_array=dataset_array,
                 assets=assets,
             )
+            if extra_args and "expression" in extra_args:
+                expression = extra_args.get("expression", None)
+                result = [
+                    eval_expr(expression, value) if value is not None else None
+                    for value in result
+                ]
+
             return_values.append({"asset_details": dataset_details, "values": result})
 
     return return_values

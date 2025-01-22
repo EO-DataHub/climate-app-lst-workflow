@@ -7,17 +7,37 @@
             "program": "${workspaceFolder}/src/main.py",
             "args": [
                 "--assets",
-                "https://lst-cogs.s3.eu-west-1.amazonaws.com/uk_points.geojson",
+                "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/uk_points_2.geojson",
                 "--stac_catalog",
-                "https://eocis.org/stac/",
+                "https://api.stac.ceda.ac.uk",
                 "--start_date",
-                "2024-10-15",
+                "2024-07-01",
                 "--end_date",
-                "2024-10-18",
+                "2024-07-31",
                 "--stac_collection",
-                "eocis-lst-slstrA-day",
+                "['eocis-lst-s3b-day', 'eocis-lst-s3a-day']",
                 "--extra_args",
-                "{'variable':'lst','unit':'K'}"
+                "{'output_name':\"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\",'variable':'lst','unit':'°C','expression':'round(x - 273.15,2)'}"
+            ]
+        },
+        {
+            "type": "debugpy",
+            "request": "launch",
+            "name": "Kerchunk Line",
+            "program": "${workspaceFolder}/src/main.py",
+            "args": [
+                "--assets",
+                "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/eocis_test_lines.geojson",
+                "--stac_catalog",
+                "https://api.stac.ceda.ac.uk",
+                "--start_date",
+                "2024-07-01",
+                "--end_date",
+                "2024-07-05",
+                "--stac_collection",
+                "['eocis-lst-s3b-night']",
+                "--extra_args",
+                "{'output_name':\"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\",'variable':'lst','unit':'°C','expression':'x - 273.15'}"
             ]
         },
         {
@@ -27,17 +47,37 @@
             "program": "${workspaceFolder}/src/main.py",
             "args": [
                 "--assets",
-                "https://lst-cogs.s3.eu-west-1.amazonaws.com/eocis_test_polygons.geojson",
+                "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/eocis_test_polygons.geojson",
                 "--stac_catalog",
-                "https://eocis.org/stac/",
+                "https://api.stac.ceda.ac.uk",
                 "--start_date",
-                "2024-10-15",
+                "2024-07-01",
                 "--end_date",
-                "2024-10-18",
+                "2024-07-31",
                 "--stac_collection",
-                "eocis-lst-slstrA-day",
+                "['eocis-lst-s3b-night']",
                 "--extra_args",
-                "{'variable':'lst','unit':'K'}"
+                "{'output_name':\"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\",'variable':'lst','unit':'°C','expression':'x - 273.15'}"
+            ]
+        },
+        {
+            "type": "debugpy",
+            "request": "launch",
+            "name": "Kerchunk Ceda",
+            "program": "${workspaceFolder}/src/main.py",
+            "args": [
+                "--assets",
+                "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/uk_points.geojson",
+                "--stac_catalog",
+                "https://api.stac.ceda.ac.uk/",
+                "--start_date",
+                "2022-10-15",
+                "--end_date",
+                "2022-10-18",
+                "--stac_collection",
+                "eocis-lst-day",
+                "--extra_args",
+                "{'output_name':\"{datetime_string}\",'variable':'lst','unit':'K','expression':'x - 273.15'}"
             ]
         },
         {
@@ -46,12 +86,12 @@
             "program": "${workspaceFolder}/src/main.py",
             "name": "TIF",
             "args": [
-                "--assets", "https://lst-cogs.s3.eu-west-1.amazonaws.com/uk_points.geojson",
+                "--assets", "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/uk_points_2.geojson",
                 "--stac_catalog", "https://test.eodatahub.org.uk/api/catalogue/stac/catalogs/supported-datasets/temp-sparkgeouser/processing-results/cat_f99e920a-a58e-11ef-aab0-7a33b70d8782",
                 "--start_date", "2024-04-15",
-                "--end_date", "2024-04-16",
+                "--end_date", "2024-04-20",
                 "--stac_collection", "col_f99e920a-a58e-11ef-aab0-7a33b70d8782",
-                "--extra_args", "{'output_name': \"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\"}"
+                "--extra_args", "{'expression':'x+273.15','output_name': \"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\"}"
 
 
             ]
@@ -62,7 +102,7 @@
             "program": "${workspaceFolder}/src/main.py",
             "name": "TIF-Polygon",
             "args": [
-                "--assets", "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_polygons_2.geojson",
+                "--assets", "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/test_polygons_2.geojson",
                 "--stac_catalog", "https://test.eodatahub.org.uk/api/catalogue/stac/catalogs/supported-datasets/temp-sparkgeouser/processing-results/cat_f99e920a-a58e-11ef-aab0-7a33b70d8782",
                 "--start_date", "2024-04-15",
                 "--end_date", "2024-04-16",
@@ -78,7 +118,7 @@
             "program": "${workspaceFolder}/src/main.py",
             "name": "No Stac items",
             "args": [
-                "--assets", "https://lst-cogs.s3.eu-west-1.amazonaws.com/uk_points.geojson",
+                "--assets", "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/uk_points.geojson",
                 "--stac_catalog", "https://test.eodatahub.org.uk/api/catalogue/stac/catalogs/supported-datasets/temp-sparkgeouser/processing-results/cat_f99e920a-a58e-11ef-aab0-7a33b70d8782",
                 "--start_date", "2023-04-15",
                 "--end_date", "2023-04-16",
@@ -93,13 +133,33 @@
             "program": "${workspaceFolder}/src/main.py",
             "name": "London LST",
             "args": [
-                "--assets", "https://lst-cogs.s3.eu-west-1.amazonaws.com/points.geojson",
+                "--assets", "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/points.geojson",
                 "--stac_catalog", "https://test.eodatahub.org.uk/api/catalogue/stac/catalogs/supported-datasets/temp-sparkgeouser/processing-results/cat_c1f6f668-b2f8-11ef-b6b1-ee3aaed8a789",
                 "--start_date", "2022-06-01",
                 "--end_date", "2022-06-30",
                 "--stac_collection", "col_c1f6f668-b2f8-11ef-b6b1-ee3aaed8a789",
                 "--extra_args", "{'output_name':\"{datetime_string}\"}"
 
+            ]
+        },
+        {
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/main.py",
+            "name": "Retail Polygons",
+            "args": [
+                "--assets",
+                "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/uk_retail_40items_4326.geojson",
+                "--stac_catalog",
+                "https://api.stac.ceda.ac.uk",
+                "--start_date",
+                "2024-07-01",
+                "--end_date",
+                "2024-07-31",
+                "--stac_collection",
+                "['eocis-lst-s3b-night']",
+                "--extra_args",
+                "{'output_name':\"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\",'variable':'lst','unit':'°C','expression':'x - 273.15'}"
             ]
         }
     ]
