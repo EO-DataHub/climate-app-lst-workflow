@@ -6,9 +6,11 @@
 @workspace = sparkgeouser
 
 @executeStatus = {{executeProcess.response.headers.Location}}
+@jobID = {{getExecuteStatus.response.body.jobID}}
+@resultItem = {{getResultList.response.body.links[1].href}}
 
 
-@processName = lst-filter
+@processName = lst-filter-polygons
 
 
 ###
@@ -31,9 +33,14 @@ Accept: application/json
 
 ###
 
-
 # @name getResults
 GET https://{{username}}.workspaces.test.eodhp.eco-ke-staging.com/files/workspaces-eodhp-test/processing-results/cat_{{getExecuteStatus.response.body.jobID}}.json
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+# @name getValuesLog
+GET https://test.eodatahub.org.uk/ades/{{username}}/temp/{{processName}}-{{jobID}}/get-values.log
 Authorization: Bearer {{token}}
 Accept: application/json
 
@@ -44,6 +51,7 @@ Accept: application/json
 GET https://sparkgeouser.workspaces.test.eodhp.eco-ke-staging.com/files/workspaces-eodhp-test/processing-results/cat_{{getExecuteStatus.response.body.jobID}}/col_{{getExecuteStatus.response.body.jobID}}/data-1729000851.8787746.json
 Authorization: Bearer {{token}}
 Accept: application/json
+
 ###
 # @name getItemManual
 GET https://sparkgeouser.workspaces.test.eodhp.eco-ke-staging.com/files/workspaces-eodhp-test/processing-results/cat_bfd833e2-8afd-11ef-8657-9625a5233070/col_bfd833e2-8afd-11ef-8657-9625a5233070/data-1729000851.8787746.json

@@ -5,7 +5,7 @@ import os
 import time
 from pathlib import Path
 
-import pandas as pd
+import geopandas as gpd
 from dateutil.parser import parse
 from shortuuid import ShortUUID
 
@@ -137,31 +137,18 @@ class WorkflowResponse:
         process_response (dict): The input JSON data.
         out_csv (str): The output CSV file path.
         """
-        try:
-            data = []
-            for feature in self.process_response.get("features", []):
-                feature_id = feature["properties"]["id"]
-                for dt, values in feature["properties"]["returned_values"].items():
-                    data.append(
-                        {"id": feature_id, "datetime": dt, "value": values.get("value")}
-                    )
+        data = self.process_response.get("features", [])
+        gdf = gpd.GeoDataFrame.from_features(data)
 
-            df = pd.DataFrame(data)
-            logger.info("CSV File data: %s", df)
-            pivot_df = df.pivot_table(index="id", columns="datetime", values="value")
-            pivot_df.reset_index(inplace=True)
+        def extract_datetime_values(row):
+            for key, val in row["returned_values"].items():
+                row[key] = val["value"] if val.get("value") else "none"
+            return row
 
-            # Ensure all datetime columns are included
-            all_datetimes = sorted(df["datetime"].unique())
-            pivot_df = pivot_df.reindex(columns=["id"] + all_datetimes, fill_value=None)
-
-            pivot_df = pivot_df.astype(object).where(pd.notnull(pivot_df), None)
-            pivot_df.fillna("null", inplace=True)
-            pivot_df.to_csv("./data.csv", index=False)
-            logger.info("CSV file successfully created at %s", "./data.csv")
-        except Exception as e:
-            logger.error("An error occurred: %s", e)
-            raise
+        gdf = gdf.apply(extract_datetime_values, axis=1)
+        gdf.drop(columns=["returned_values", "geometry"], inplace=True)
+        csv_filename = "./data.csv"
+        gdf.to_csv(csv_filename, index=False)
 
     def create_error_response(self) -> dict:
         """
@@ -206,9 +193,11 @@ class WorkflowResponse:
             else:
                 unit = result["asset_details"].unit
             if self.extra_args and "output_name" in self.extra_args:
+                logger.info("Output name: %s", self.extra_args["output_name"])
                 output_name = self.extra_args["output_name"]
                 output_name = eval(f"f'{output_name}'")
             else:
+                logger.info("using default output name")
                 output_name = datetime_string[:-9]
             logger.info("Output name: %s", output_name)
             for index, value in enumerate(result["values"]):

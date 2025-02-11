@@ -3,6 +3,7 @@ import os
 import tempfile
 
 import boto3
+import geopandas as gpd
 import numpy as np
 import requests
 import xarray as xr
@@ -10,10 +11,11 @@ import xarray as xr
 from app.get_values_logger import logger
 
 
-class SpatialData:
+class AssetData:
     def __init__(self, source: str):
         self.source = source
-        self.data = self.download()
+        self.data, self.gdf = self.download()
+        self.geometry_type = self.get_geometry_types()
 
     def load_json_from_file(self, file_path: str) -> dict:
         """
@@ -50,7 +52,7 @@ class SpatialData:
             dict: The JSON content loaded from the downloaded file.
         """
         s3 = boto3.client("s3")
-
+        base_name = os.path.basename(self.source)
         if self.source.startswith("http"):
             logger.info(f"Downloading {self.source} using http...")
             response = requests.get(self.source)
@@ -61,7 +63,8 @@ class SpatialData:
                     temp_file.close()
                 except RuntimeError as e:
                     logger.error(e)
-            self.data = self.load_json_from_file(temp_file.name)
+            data = self.load_json_from_file(temp_file.name)
+            gdf = gpd.read_file(temp_file.name)
         else:
             base_name = os.path.basename(self.source)
             bucket_arn = "workspaces-eodhp-test"
@@ -69,10 +72,11 @@ class SpatialData:
 
             # Use pathlib.Path to get the name without suffix
             s3.download_file(bucket_arn, self.source, base_name)
-            self.data = self.load_json_from_file(base_name)
-        return self.data
+            data = self.load_json_from_file(base_name)
+            gdf = gpd.read_file(base_name)
+        return data, gdf
 
-    def spatial_to_xr_dataset(self) -> xr.Dataset:
+    def point_to_xr_dataset(self) -> xr.Dataset:
         """
         Converts points data to an xarray Dataset.
 
@@ -99,3 +103,25 @@ class SpatialData:
             {"x": (["points"], longitudes), "y": (["points"], latitudes)},
         )
         return dataset
+
+    def polygon_to_gdf(self) -> gpd.GeoDataFrame:
+        return gpd.GeoDataFrame.from_features(self.data["features"])
+
+    def get_geometry_types(self) -> list:
+        geom_type_list = self._list_geometry_types()
+        if not geom_type_list:
+            raise ValueError("No geometry types found")
+        first_type = geom_type_list[0]
+        for geom_type in geom_type_list:
+            if geom_type != first_type:
+                return "Mixed"
+        return first_type
+
+    def _list_geometry_types(self) -> list:
+        geometry_types = []
+        for feature in self.data.get("features", []):
+            geometry = feature.get("geometry", {})
+            geometry_type = geometry.get("type")
+            if geometry_type:
+                geometry_types.append(geometry_type)
+        return geometry_types

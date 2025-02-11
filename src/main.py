@@ -5,11 +5,11 @@ Main starting point for the workflow.
 
 import argparse
 
+from app.asset_data import AssetData
 from app.create_response import ResponseStatus, WorkflowResponse
 from app.extra import string_to_json
-from app.get_values import get_values_for_multiple_stac_assets
+from app.get_values import get_values_for_multiple_datasets
 from app.get_values_logger import logger
-from app.points_data import SpatialData
 from app.search_stac import StacSearch
 from app.stac_parsing import get_asset_data_list
 
@@ -50,6 +50,12 @@ def parse_arguments():
 
 
 def run_workflow(args: argparse.Namespace) -> None:
+    """
+    Runs the workflow with the provided arguments.
+
+    Args:
+        args (argparse.Namespace): The parsed command-line arguments.
+    """
     stac_search = StacSearch(
         catalog_url=args.stac_catalog,
         start_date=args.start_date,
@@ -59,20 +65,21 @@ def run_workflow(args: argparse.Namespace) -> None:
         max_items=args.max_items,
     )
 
-    if stac_search.number_of_results == 0:
+    no_of_results = stac_search.number_of_results
+    if no_of_results == 0:
         logger.error("No STAC items found")
         WorkflowResponse(status=ResponseStatus.ERROR, error_msg="No STAC items found")
     else:
-        logger.info("Found STAC items, getting points data")
-        spatial_data = SpatialData(args.assets)
+        logger.info(f"Found {no_of_results} STAC items, getting points data")
+        spatial_data = AssetData(args.assets)
 
         logger.info("Getting asset data list")
         asset_data_list = get_asset_data_list(stac_search.results)
 
         logger.info("Getting values from STAC items")
-        return_values = get_values_for_multiple_stac_assets(
-            asset_details_list=asset_data_list,
-            points=spatial_data.spatial_to_xr_dataset(),
+        return_values = get_values_for_multiple_datasets(
+            dataset_details_list=asset_data_list,
+            assets=spatial_data,
             extra_args=args.extra_args,
         )
         logger.info("Merging results into dict")

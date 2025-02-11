@@ -14,7 +14,7 @@ from app.get_values_logger import logger
 
 
 @dataclass
-class AssetDetails:
+class DatasetDetails:
     url: str
     datetime: datetime
     source_file_name: str
@@ -68,7 +68,7 @@ class StacItem:
                     f"Error loading JSON from {self.url}: {type(e).__name__}: {e}"
                 ) from e
 
-    def get_asset_details(self) -> AssetDetails:
+    def get_asset_details(self) -> DatasetDetails:
         """
         Extract the URL of the first asset
         found in the STAC item's assets.
@@ -92,10 +92,10 @@ class StacItem:
                 dt = self.stac_item.get("properties", {}).get("datetime")
                 source_file_name = Path(url).stem.replace(".", "-")
                 unit = self.stac_item.get("properties", {}).get("unit")
-                return AssetDetails(url, dt, source_file_name, unit)
+                return DatasetDetails(url, dt, source_file_name, unit)
 
 
-def get_asset_data_list(stac_item_url_list: list[str]) -> list[AssetDetails]:
+def get_asset_data_list(stac_item_url_list: list[str]) -> list[DatasetDetails]:
     """
     Retrieve a list of asset details from a list of STAC item URLs.
 

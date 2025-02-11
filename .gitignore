@@ -167,4 +167,4 @@ notebooks/
 
 .vscode/settings.json
 uv.lock
-.venvcon/*
+.venvcon
