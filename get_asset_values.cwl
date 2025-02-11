@@ -5,9 +5,6 @@ $graph:
     label: Land Surface Temperature (LST)
     doc: >
       The Land Surface Temperature workflow will report on observed land surface temperature observations from your assets.
-
-      This workflow requires the following columns: ID, latitude, longitude.
-
     requirements:
       NetworkAccess:
         networkAccess: true
@@ -57,7 +54,7 @@ $graph:
         NetworkAccess:
             networkAccess: true
         DockerRequirement:
-            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:latest
+            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:parse_bucket
     baseCommand: main.py
     inputs:
         assets:

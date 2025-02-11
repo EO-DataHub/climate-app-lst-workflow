@@ -1,0 +1,28 @@
+{
+    "name": "values-devcontainer",
+    "build":{
+      "dockerfile": "./Dockerfile",
+      "context": "../"
+    },
+    "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "ms-azuretools.vscode-docker",
+        "njpwerner.autodocstring",
+        "ms-python.black-formatter",
+        "kamikillerto.vscode-colorize",
+        "ms-python.flake8",
+        "vsls-contrib.gistfs",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "oderwat.indent-rainbow",
+        "ms-python.isort",
+        "ZainChen.json",
+        "ckolkman.vscode-postgres"
+      ],
+      "settings": {"python.defaultInterpreterPath": "/opt/venv/bin/python"}
+    }
+  }
+  }

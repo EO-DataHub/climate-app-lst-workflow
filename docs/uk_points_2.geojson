@@ -1,0 +1,80 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -0.1276,
+                    51.5074
+                ]
+            },
+            "properties": {
+                "name": "London",
+                "population": 8982000,
+                "area_sq_km": 1572
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -1.8262,
+                    51.1789
+                ]
+            },
+            "properties": {
+                "name": "Stonehenge",
+                "historical": true,
+                "visitor_count_per_year": 1200000
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -3.1883,
+                    55.9533
+                ]
+            },
+            "properties": {
+                "name": "Edinburgh",
+                "population": 506520,
+                "area_sq_km": 264
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -2.2426,
+                    53.4808
+                ]
+            },
+            "properties": {
+                "name": "Manchester",
+                "population": 553230,
+                "area_sq_km": 115.6
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -3.935,
+                    51.5815
+                ]
+            },
+            "properties": {
+                "name": "Swansea",
+                "population": 246466,
+                "area_sq_km": 378
+            }
+        }
+    ]
+}

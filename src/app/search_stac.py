@@ -2,6 +2,8 @@ import logging
 
 import pystac_client
 
+from app.extra import parse_string_to_list
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -21,7 +23,7 @@ class StacSearch:
         self.start_date = start_date
         self.end_date = end_date
         self.query = stac_query
-        self.collection = collection
+        self.collections = parse_string_to_list(collection)
         self.max_items = max_items
         self.search = self.search_catalog()
         self.results = self.get_search_results()
@@ -65,10 +67,12 @@ class StacSearch:
         else:
             cq2_filter = self.query_to_filter()
             search_params = {"datetime": time_range, "filter": cq2_filter}
-        if self.collection:
-            search_params["collections"] = [self.collection]
+        if self.collections:
+            search_params["collections"] = self.collections
+            print(f"Searching collection {self.collections}")
         if self.max_items:
             search_params["max_items"] = self.max_items
+        print(f"Searching catalog with parameters: {search_params}")
         search = self.catalog.search(**search_params)
         return search
 
@@ -86,6 +90,7 @@ class StacSearch:
         results = []
         for item in self.search.items():
             results.append(item.get_self_href())
+            print(item.get_self_href())
         return results
 
     def query_to_filter(self) -> dict:

@@ -2,12 +2,14 @@ import rioxarray as rxr
 import xarray as xr
 
 from app.get_values_logger import logger
-from app.stac_parsing import AssetDetails
+from app.stac_parsing import DatasetDetails
 
 
-class AssetDataArray:
-    def __init__(self, asset_details: AssetDetails, extra_args: dict = None) -> None:
-        self.asset_details = asset_details
+class DatasetDataArray:
+    def __init__(
+        self, dataset_details: DatasetDetails, extra_args: dict = None
+    ) -> None:
+        self.dataset_details = dataset_details
         self.file_type = self.determine_file_type()
         self.extra_args = extra_args
         self.ds = self.open_dataset()
@@ -21,7 +23,7 @@ class AssetDataArray:
         Returns:
         str: The type of the file ('GeoTIFF', 'JSON', 'NetCDF', or 'Unknown').
         """
-        url = self.asset_details.url
+        url = self.dataset_details.url
         if url.endswith(".tif") or url.endswith(".tiff"):
             return "GeoTIFF"
         elif url.endswith(".json"):
@@ -41,7 +43,7 @@ class AssetDataArray:
         xr.Dataset: Dataset opened from URL.
         """
         logger.info("Opening dataset from URL")
-        url = self.asset_details.url
+        url = self.dataset_details.url
         if isinstance(self.extra_args, dict):
             variable = self.extra_args.get("variable", None)
             crs = self.extra_args.get("crs", None)
