@@ -4,8 +4,10 @@ Functions to get values from a cog file
 
 import ast
 import operator
+from typing import Any
 
 import geopandas as gpd
+import numpy as np
 import rasterio as rio
 import xarray as xr
 from aiohttp.client_exceptions import ClientResponseError
@@ -71,7 +73,7 @@ def get_values_points(datasource_array: xr.DataArray, assets: xr.Dataset) -> lis
         else:
             logger.error("Unsupported index keys")
         # replace nan with None
-        values = [None if str(v) == "nan" else v for v in values]
+        values = [{"value": None} if str(v) == "nan" else {"value": v} for v in values]
         return values
 
 
@@ -94,9 +96,14 @@ def get_values_polygons(
         assets = assets.to_crs(ds_crs)
     datasource_array = datasource_array.squeeze()
     results = []
+
+    error_results = {"mean": None, "median": None, "min": None, "max": None}
+
     for _, row in assets.iterrows():
         minx, miny, maxx, maxy = row.geometry.bounds
         try:
+            # clip the raster to the bounding box of the polygon so that
+            # we only read the necessary data
             bbox_rds = datasource_array.rio.clip_box(
                 minx=minx,
                 miny=miny,
@@ -104,16 +111,26 @@ def get_values_polygons(
                 maxy=maxy,
                 allow_one_dimensional_raster=True,
             )
+            # clip the raster to the polygon
             clipped = bbox_rds.rio.clip([mapping(row.geometry)], assets.crs)
-            results.append(clipped.mean().item())
-        except ClientResponseError:
-            results.append("DataError")
-        except NoDataInBounds:
-            results.append(None)
-        except Exception as e:
+            data = clipped.data.flatten()
+            data = data[~np.isnan(data)]
+            if data.size > 0:
+                # calculate statistics
+                stats = {
+                    "mean": data.mean().item(),
+                    "median": np.median(data).item(),
+                    "min": data.min().item(),
+                    "max": data.max().item(),
+                }
+            else:
+                stats = {"mean": None, "median": None, "min": None, "max": None}
+            results.append(stats)
+        except (ClientResponseError, NoDataInBounds, Exception) as e:
+            # if there is an error, append None to the results
             logger.error(f"Error extracting values from polygon: {e}")
-            results.append(None)
-    results = [None if str(v) == "nan" else v for v in results]
+            results.append(error_results)
+
     return results
 
 
@@ -136,19 +153,35 @@ def get_values_lines(
         assets = assets.to_crs(ds_crs)
     datasource_array = datasource_array.squeeze()
     results = []
+
+    error_results = {"mean": None, "median": None, "min": None, "max": None}
+
     for _, row in assets.iterrows():
         minx, miny, maxx, maxy = row.geometry.bounds
         try:
+            # clip the raster to the bounding box of the line so that
+            # we only read the necessary data
             bbox_rds = datasource_array.rio.clip_box(
                 minx=minx, miny=miny, maxx=maxx, maxy=maxy
             )
             clipped = bbox_rds.rio.clip([mapping(row.geometry)], assets.crs)
-            results.append(clipped.mean().item())
-        except NoDataInBounds:
-            results.append(None)
-        except ClientResponseError:
-            results.append("DataError")
-    results = [None if str(v) == "nan" else v for v in results]
+            data = clipped.data.flatten()
+            data = data[~np.isnan(data)]
+            if data.size > 0:
+                # calculate statistics
+                stats = {
+                    "mean": data.mean().item(),
+                    "median": np.median(data).item(),
+                    "min": data.min().item(),
+                    "max": data.max().item(),
+                }
+            else:
+                stats = {"mean": None, "median": None, "min": None, "max": None}
+            results.append(stats)
+        except (ClientResponseError, NoDataInBounds, Exception) as e:
+            # if there is an error, append None to the results
+            logger.error(f"Error extracting values from polygon: {e}")
+            results.append(error_results)
     return results
 
 
@@ -192,11 +225,54 @@ def eval_expr(expr, value):
     return _eval(node)
 
 
+def prepare_assets(assets: AssetData, geometry_type: str) -> tuple:
+    """
+    Prepare assets based on the geometry type.
+
+    Parameters:
+    - assets (AssetData): The asset data to prepare.
+    - geometry_type (str): The type of geometry (e.g., 'Point', 'Polygon').
+
+    Returns:
+    tuple: A tuple containing the prepared assets and the number of assets.
+    """
+    if geometry_type == "Point":
+        assets = assets.point_to_xr_dataset()
+        no_of_assets = len(assets.x)
+    else:
+        assets = assets.gdf
+        no_of_assets = len(assets)
+    return assets, no_of_assets
+
+
+def apply_expression(
+    results: dict[str, list[Any]], expression: str
+) -> dict[str, list[Any]]:
+    """
+    Apply a mathematical expression to the values in the result dictionary.
+
+    Parameters:
+    - result (dict[str, list[Any]]): Dictionary containing the values to process.
+    - expression (str): The mathematical expression to apply.
+
+    Returns:
+    dict[str, list[Any]]: Dictionary with the processed values.
+    """
+    returned_results = []
+    for item in results:
+        returned_values = {
+            key: eval_expr(expression, res) if res is not None else None
+            for key, res in item.items()
+        }
+        returned_results.append(returned_values)
+    return returned_results
+
+
 def get_values_for_multiple_datasets(
     dataset_details_list: list[DatasetDetails],
     assets: AssetData,
-    extra_args: str = None,
-) -> list:
+    extra_args: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     """
     Retrieve values for multiple STAC assets.
 
@@ -219,38 +295,32 @@ def get_values_for_multiple_datasets(
     }
     geometry_type = assets.geometry_type
 
-    if geometry_type in geometry_type_to_function:
-        if geometry_type == "Point":
-            assets = assets.point_to_xr_dataset()
-            no_of_assets = len(assets.x)
-        else:
-            assets = assets.gdf
-            no_of_assets = len(assets)
+    if geometry_type not in geometry_type_to_function:
+        logger.error(f"Unsupported geometry type: {geometry_type}")
+        raise ValueError(f"Unsupported geometry type: {geometry_type}")
 
-        for dataset_details in dataset_details_list:
-            logger.info("Getting values from multiple datasets")
-            try:
-                dataset_array = DatasetDataArray(
-                    dataset_details=dataset_details, extra_args=extra_args
-                ).ds
-            except Exception as e:
-                logger.error(f"Error getting values for dataset: {e}")
-                values = [None] * no_of_assets
-                return_values.append(
-                    {"asset_details": dataset_details, "values": values}
-                )
-                continue
-            result = geometry_type_to_function[geometry_type](
-                datasource_array=dataset_array,
-                assets=assets,
-            )
-            if extra_args and "expression" in extra_args:
-                expression = extra_args.get("expression", None)
-                result = [
-                    eval_expr(expression, value) if value is not None else None
-                    for value in result
-                ]
+    assets, no_of_assets = prepare_assets(assets, geometry_type)
 
-            return_values.append({"asset_details": dataset_details, "values": result})
+    for dataset_details in dataset_details_list:
+        logger.info("Getting values from multiple datasets")
+        try:
+            dataset_array = DatasetDataArray(
+                dataset_details=dataset_details, extra_args=extra_args
+            ).ds
+        except Exception as e:
+            logger.error(f"Error getting values for dataset: {e}")
+            values = [None] * no_of_assets
+            return_values.append({"asset_details": dataset_details, "values": values})
+            continue
 
+        result = geometry_type_to_function[geometry_type](
+            datasource_array=dataset_array,
+            assets=assets,
+        )
+
+        if extra_args and "expression" in extra_args:
+            result = apply_expression(result, extra_args["expression"])
+
+        return_values.append({"asset_details": dataset_details, "values": result})
+    logger.debug("Values from multiple files retrieved")
     return return_values
