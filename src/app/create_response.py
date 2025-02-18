@@ -142,7 +142,9 @@ class WorkflowResponse:
 
         def extract_datetime_values(row):
             for key, val in row["returned_values"].items():
-                row[key] = val["value"] if val.get("value") else "none"
+                for k, v in val["values"].items():
+                    key_to_use = f"{key}_{k}"
+                    row[key_to_use] = v
             return row
 
         gdf = gdf.apply(extract_datetime_values, axis=1)
@@ -204,7 +206,7 @@ class WorkflowResponse:
                 request_json["features"][index]["properties"]["returned_values"][
                     output_name
                 ] = {
-                    "value": value,
+                    "values": value,
                     "datetime": dt,
                     "unit": unit,
                     "file_name": file_name,
