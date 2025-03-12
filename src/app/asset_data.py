@@ -11,6 +11,22 @@ import xarray as xr
 from app.get_values_logger import logger
 
 
+def extract_bucket_and_key_from_s3_url(s3_path):
+    """
+    Extracts the bucket name and key from an S3 URL.
+
+    Args:
+        s3_path (str): The S3 URL in the format 's3://bucket_name/key'.
+
+    Returns:
+        tuple: A tuple containing the bucket name (str) and the key (str).
+    """
+    path_parts = s3_path.replace("s3://", "").split("/")
+    bucket = path_parts.pop(0)
+    key = "/".join(path_parts)
+    return bucket, key
+
+
 class AssetData:
     def __init__(self, source: str):
         self.source = source
@@ -51,9 +67,8 @@ class AssetData:
         Returns:
             dict: The JSON content loaded from the downloaded file.
         """
-        s3 = boto3.client("s3")
         base_name = os.path.basename(self.source)
-        if self.source.startswith("http"):
+        if self.source.startswith("https://") or self.source.startswith("http://"):
             logger.info(f"Downloading {self.source} using http...")
             response = requests.get(self.source)
             with tempfile.NamedTemporaryFile(mode="w", delete=False) as temp_file:
@@ -65,15 +80,22 @@ class AssetData:
                     logger.error(e)
             data = self.load_json_from_file(temp_file.name)
             gdf = gpd.read_file(temp_file.name)
+        elif self.source.startswith("s3://"):
+            s3 = boto3.client("s3")
+            bucket_name, key = extract_bucket_and_key_from_s3_url(self.source)
+            logger.info(f"Downloading key: {key} from bucket: {bucket_name}...")
+            local_file = os.path.basename(key)
+            s3.download_file(bucket_name, key, local_file)
+            data = self.load_json_from_file(local_file)
+            gdf = gpd.read_file(local_file)
         else:
             base_name = os.path.basename(self.source)
             bucket_arn = "workspaces-eodhp-test"
             logger.info(f"Downloading {self.source} from {bucket_arn}...")
-
-            # Use pathlib.Path to get the name without suffix
             s3.download_file(bucket_arn, self.source, base_name)
             data = self.load_json_from_file(base_name)
             gdf = gpd.read_file(base_name)
+
         return data, gdf
 
     def point_to_xr_dataset(self) -> xr.Dataset:

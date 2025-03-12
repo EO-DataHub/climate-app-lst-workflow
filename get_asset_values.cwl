@@ -1,7 +1,7 @@
 cwlVersion: v1.2
 $graph:
   - class: Workflow
-    id: lst-filter-polygons
+    id: lst-filter
     label: Land Surface Temperature (LST)
     doc: >
       The Land Surface Temperature workflow will report on observed land surface temperature observations from your assets.
@@ -54,7 +54,7 @@ $graph:
         NetworkAccess:
             networkAccess: true
         DockerRequirement:
-            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:polygons17
+            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:parse_bucket
     baseCommand: main.py
     inputs:
         assets:

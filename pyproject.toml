@@ -15,7 +15,7 @@ dependencies = [
     "pandas>=2.2.3",
     "pystac-client>=0.8.5",
     "pystac>=1.11.0",
-    "requests==2.31.0",
+    "requests>=2.32.0",
     "rioxarray>=0.18.1",
     "s3fs>=0.4.2",
     "shapely>=2.0.6",
