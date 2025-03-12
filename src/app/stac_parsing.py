@@ -4,31 +4,12 @@ retrieving specific assets such as COG (Cloud Optimized GeoTIFF) URLs.
 """
 
 import json
-from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 
 import requests
 
+from app.data_models import DatasetDetails
 from app.get_values_logger import logger
-
-
-@dataclass
-class DatasetDetails:
-    url: str
-    datetime: datetime
-    source_file_name: str
-    unit: str
-    variable: str = None
-
-    def to_dict(self):
-        return {
-            "url": self.url,
-            "datetime": self.datetime,
-            "source_file_name": self.source_file_name,
-            "unit": self.unit,
-            "variable": self.variable,
-        }
 
 
 class StacItem:
@@ -94,7 +75,9 @@ class StacItem:
                 dt = self.stac_item.get("properties", {}).get("datetime")
                 source_file_name = Path(url).stem.replace(".", "-")
                 unit = self.stac_item.get("properties", {}).get("unit")
-                return DatasetDetails(url, dt, source_file_name, unit)
+                return DatasetDetails(
+                    url=url, datetime=dt, source_file_name=source_file_name, unit=unit
+                )
 
 
 def get_asset_data_list(stac_item_url_list: list[str]) -> list[DatasetDetails]:

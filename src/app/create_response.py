@@ -6,8 +6,6 @@ import time
 from pathlib import Path
 
 import geopandas as gpd
-from dateutil.parser import parse
-from shortuuid import ShortUUID
 
 from app.get_values_logger import logger
 
@@ -19,25 +17,16 @@ class ResponseStatus:
 
 class WorkflowResponse:
     def __init__(
-        self,
-        status: ResponseStatus,
-        return_values: dict = None,
-        points_json: dict = None,
-        error_msg=None,
-        extra_args=None,
+        self, status: ResponseStatus, return_values: dict = None, error_msg=None
     ):
         self.status = status
         self.error_msg = error_msg
-        self.extra_args = extra_args
         if self.status == ResponseStatus.ERROR:
             self.process_response = {}
             self.out_file = "./error.txt"
             self.create_error_response()
         else:
-            self.process_response = self.merge_results_into_dict(
-                return_values, points_json
-            )
-            self.points_json = points_json
+            self.process_response = return_values
             self.out_file = "./data.csv"
             self.to_csv()
 
@@ -166,58 +155,6 @@ class WorkflowResponse:
         }
         json_to_file(error_return, self.out_file)
 
-    def merge_results_into_dict(self, results_list: list, request_json: dict) -> dict:
-        """
-        Merges extracted values into the original request JSON.
-
-        Parameters:
-        - results_list (list): List of dicts with file paths and values.
-        - request_json (dict): Original request GeoJSON to merge results into.
-
-        Returns:
-        dict: The updated request JSON with merged results.
-        """
-        for feature in request_json["features"]:
-            if "id" not in feature["properties"]:
-                feature["properties"]["id"] = ShortUUID().random(length=8)
-            feature["properties"]["returned_values"] = {}
-
-        for result in results_list:
-            variable = result["asset_details"].variable
-            logger.info("Variable: %s", variable)
-            dt = result["asset_details"].datetime
-            datetime_string = parse(dt).strftime("%Y-%m-%d %H:%M:%S")
-            logger.info("Datetime string: %s", datetime_string)
-            file_name = result["asset_details"].source_file_name
-            logger.info("File name: %s", file_name)
-            if self.extra_args and "unit" in self.extra_args:
-                unit = self.extra_args["unit"]
-            else:
-                unit = result["asset_details"].unit
-            if self.extra_args and "output_name" in self.extra_args:
-                logger.info("Output name: %s", self.extra_args["output_name"])
-                output_name = self.extra_args["output_name"]
-                output_name = eval(f"f'{output_name}'")
-            else:
-                logger.info("using default output name")
-                output_name = datetime_string[:-9]
-            logger.info("Output name: %s", output_name)
-            for index, value in enumerate(result["values"]):
-                request_json["features"][index]["properties"]["returned_values"][
-                    output_name
-                ] = {
-                    "value": value,
-                    "datetime": dt,
-                    "unit": unit,
-                    "file_name": file_name,
-                }
-
-            for feature in request_json["features"]:
-                feature["properties"]["returned_values"] = dict(
-                    sorted(feature["properties"]["returned_values"].items())
-                )
-        return request_json
-
 
 def json_to_file(json_data: dict, file_path: str) -> None:
     """
@@ -231,4 +168,4 @@ def json_to_file(json_data: dict, file_path: str) -> None:
         try:
             json.dump(json_data, f)
         except Exception as e:
-            print(f"Error writing data to file, {file_path}: {e}")
+            logger.error(f"Error writing data to file, {file_path}: {e}")

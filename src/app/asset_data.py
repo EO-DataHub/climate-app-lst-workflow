@@ -30,8 +30,19 @@ def extract_bucket_and_key_from_s3_url(s3_path):
 class AssetData:
     def __init__(self, source: str):
         self.source = source
-        self.data, self.gdf = self.download()
+        self.json_data, self.gdf = self.download()
         self.geometry_type = self.get_geometry_types()
+        self.data, self.no_of_assets = self.get_assets_and_count()
+        self.crs = self.gdf.crs
+
+    def get_assets_and_count(self):
+        if self.geometry_type == "Point":
+            asset_data = self.point_to_xr_dataset()
+            no_of_assets = len(asset_data.x)
+        else:
+            asset_data = self.gdf
+            no_of_assets = len(asset_data)
+        return asset_data, no_of_assets
 
     def load_json_from_file(self, file_path: str) -> dict:
         """
@@ -67,7 +78,6 @@ class AssetData:
         Returns:
             dict: The JSON content loaded from the downloaded file.
         """
-        base_name = os.path.basename(self.source)
         if self.source.startswith("https://") or self.source.startswith("http://"):
             logger.info(f"Downloading {self.source} using http...")
             response = requests.get(self.source)
@@ -89,12 +99,8 @@ class AssetData:
             data = self.load_json_from_file(local_file)
             gdf = gpd.read_file(local_file)
         else:
-            base_name = os.path.basename(self.source)
-            bucket_arn = "workspaces-eodhp-test"
-            logger.info(f"Downloading {self.source} from {bucket_arn}...")
-            s3.download_file(bucket_arn, self.source, base_name)
-            data = self.load_json_from_file(base_name)
-            gdf = gpd.read_file(base_name)
+            data = self.load_json_from_file(self.source)
+            gdf = gpd.read_file(self.source)
 
         return data, gdf
 
@@ -110,7 +116,7 @@ class AssetData:
         """
         logger.info("Converting points to xarray Dataset")
         try:
-            features = self.data["features"]
+            features = self.json_data["features"]
             latitudes = np.array(
                 [feature["geometry"]["coordinates"][1] for feature in features]
             )
@@ -127,7 +133,7 @@ class AssetData:
         return dataset
 
     def polygon_to_gdf(self) -> gpd.GeoDataFrame:
-        return gpd.GeoDataFrame.from_features(self.data["features"])
+        return gpd.GeoDataFrame.from_features(self.json_data["features"])
 
     def get_geometry_types(self) -> list:
         geom_type_list = self._list_geometry_types()
@@ -141,7 +147,7 @@ class AssetData:
 
     def _list_geometry_types(self) -> list:
         geometry_types = []
-        for feature in self.data.get("features", []):
+        for feature in self.json_data.get("features", []):
             geometry = feature.get("geometry", {})
             geometry_type = geometry.get("type")
             if geometry_type:

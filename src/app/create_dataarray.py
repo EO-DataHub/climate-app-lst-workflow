@@ -9,12 +9,13 @@ class DatasetDataArray:
     def __init__(
         self,
         dataset_details: DatasetDetails,
-        extra_args: dict = None,
+        variable: str | None = None,
+        crs: str = "EPSG:4326",
     ) -> None:
+        self.variable = variable if variable else None
+        self.crs = crs
         self.dataset_details = dataset_details
-        self.variable = self.dataset_details.variable
         self.file_type = self.determine_file_type()
-        self.extra_args = extra_args
         self.ds = self.open_dataset()
 
     def determine_file_type(self) -> str:
@@ -47,11 +48,6 @@ class DatasetDataArray:
         """
         logger.info("Opening dataset from URL")
         url = self.dataset_details.url
-        if isinstance(self.extra_args, dict):
-            crs = self.extra_args.get("crs", None)
-        else:
-            crs = None
-
         try:
             match self.file_type:
                 case "JSON":
@@ -59,19 +55,21 @@ class DatasetDataArray:
                     ds = xr.open_dataset(url, decode_coords="all", engine="kerchunk")
                     if self.variable:
                         ds = ds[self.variable]
+                        ds = ds.squeeze()
                 case "NetCDF":
                     logger.info("Opening NetCDF file")
                     ds = xr.open_dataset(url, decode_coords="all")
                     if self.variable:
                         ds = ds[self.variable]
+                        ds = ds.squeeze()
                 case "GeoTIFF":
                     logger.info("Opening GeoTIFF file")
                     ds = rxr.open_rasterio(url, mask_and_scale=True)
                 case _:
                     raise ValueError(f"Unsupported file type: {self.file_type}")
             ds.attrs["file_path"] = url
-            if crs:
-                ds.rio.write_crs(crs, inplace=True)
+            if self.crs:
+                ds.rio.write_crs(self.crs, inplace=True)
             else:
                 if not ds.rio.crs:
                     logger.info("CRS not found in dataset. Writing default CRS.")
