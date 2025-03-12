@@ -7,9 +7,12 @@ from app.stac_parsing import DatasetDetails
 
 class DatasetDataArray:
     def __init__(
-        self, dataset_details: DatasetDetails, extra_args: dict = None
+        self,
+        dataset_details: DatasetDetails,
+        extra_args: dict = None,
     ) -> None:
         self.dataset_details = dataset_details
+        self.variable = self.dataset_details.variable
         self.file_type = self.determine_file_type()
         self.extra_args = extra_args
         self.ds = self.open_dataset()
@@ -45,23 +48,22 @@ class DatasetDataArray:
         logger.info("Opening dataset from URL")
         url = self.dataset_details.url
         if isinstance(self.extra_args, dict):
-            variable = self.extra_args.get("variable", None)
             crs = self.extra_args.get("crs", None)
         else:
-            variable = None
             crs = None
+
         try:
             match self.file_type:
                 case "JSON":
                     logger.info("Opening JSON file")
                     ds = xr.open_dataset(url, decode_coords="all", engine="kerchunk")
-                    if variable:
-                        ds = ds[variable]
+                    if self.variable:
+                        ds = ds[self.variable]
                 case "NetCDF":
                     logger.info("Opening NetCDF file")
                     ds = xr.open_dataset(url, decode_coords="all")
-                    if variable:
-                        ds = ds[variable]
+                    if self.variable:
+                        ds = ds[self.variable]
                 case "GeoTIFF":
                     logger.info("Opening GeoTIFF file")
                     ds = rxr.open_rasterio(url, mask_and_scale=True)

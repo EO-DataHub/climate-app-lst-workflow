@@ -23,6 +23,26 @@
         {
             "type": "debugpy",
             "request": "launch",
+            "name": "Variables",
+            "program": "${workspaceFolder}/src/main.py",
+            "args": [
+                "--assets",
+                "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/uk_points_2.geojson",
+                "--stac_catalog",
+                "https://api.stac.ceda.ac.uk",
+                "--start_date",
+                "2024-07-01",
+                "--end_date",
+                "2024-07-31",
+                "--stac_collection",
+                "['eocis-lst-s3b-day', 'eocis-lst-s3a-day']",
+                "--extra_args",
+                "{'output_name':\"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\",'variables':'lst,lst_uncertainty','unit':'°C','expression':'round(x - 273.15,2)'}"
+            ]
+        },
+        {
+            "type": "debugpy",
+            "request": "launch",
             "name": "Kerchunk Line",
             "program": "${workspaceFolder}/src/main.py",
             "args": [
@@ -57,7 +77,7 @@
                 "--stac_collection",
                 "['eocis-lst-s3b-night']",
                 "--extra_args",
-                "{'output_name':\"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\",'variable':'lst','unit':'°C','expression':'x - 273.15'}"
+                "{'output_name':\"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}_{variable}\",'variables':'lst,lst_uncertainty','unit':'°C'}"
             ]
         },
         {

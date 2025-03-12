@@ -183,6 +183,8 @@ class WorkflowResponse:
             feature["properties"]["returned_values"] = {}
 
         for result in results_list:
+            variable = result["asset_details"].variable
+            logger.info("Variable: %s", variable)
             dt = result["asset_details"].datetime
             datetime_string = parse(dt).strftime("%Y-%m-%d %H:%M:%S")
             logger.info("Datetime string: %s", datetime_string)

@@ -19,6 +19,7 @@ class DatasetDetails:
     datetime: datetime
     source_file_name: str
     unit: str
+    variable: str = None
 
     def to_dict(self):
         return {
@@ -26,6 +27,7 @@ class DatasetDetails:
             "datetime": self.datetime,
             "source_file_name": self.source_file_name,
             "unit": self.unit,
+            "variable": self.variable,
         }
 
 

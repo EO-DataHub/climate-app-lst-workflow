@@ -192,6 +192,27 @@ def eval_expr(expr, value):
     return _eval(node)
 
 
+def get_variables(extra_args: dict | None) -> list:
+    """
+    Extracts variables from the extra arguments.
+
+    Parameters:
+    - extra_args (dict | None): Dictionary containing additional arguments.
+
+    Returns:
+    list: A list of variables extracted from the extra arguments.
+    """
+    if isinstance(extra_args, dict):
+        variables = extra_args.get("variables", None)
+        if variables:
+            variables = variables.split(",")
+            return variables
+        elif extra_args.get("variable", None) is not None:
+            return [extra_args["variable"]]
+        else:
+            return [None]
+
+
 def get_values_for_multiple_datasets(
     dataset_details_list: list[DatasetDetails],
     assets: AssetData,
@@ -228,29 +249,36 @@ def get_values_for_multiple_datasets(
             no_of_assets = len(assets)
 
         for dataset_details in dataset_details_list:
-            logger.info("Getting values from multiple datasets")
-            try:
-                dataset_array = DatasetDataArray(
-                    dataset_details=dataset_details, extra_args=extra_args
-                ).ds
-            except Exception as e:
-                logger.error(f"Error getting values for dataset: {e}")
-                values = [None] * no_of_assets
-                return_values.append(
-                    {"asset_details": dataset_details, "values": values}
-                )
-                continue
-            result = geometry_type_to_function[geometry_type](
-                datasource_array=dataset_array,
-                assets=assets,
-            )
-            if extra_args and "expression" in extra_args:
-                expression = extra_args.get("expression", None)
-                result = [
-                    eval_expr(expression, value) if value is not None else None
-                    for value in result
-                ]
+            variables = get_variables(extra_args)
+            for variable in variables:
+                logger.info("Getting values from multiple datasets")
+                try:
+                    dataset_details.variable = variable
+                    dataset_array = DatasetDataArray(
+                        dataset_details=dataset_details,
+                        extra_args=extra_args,
+                    ).ds
 
-            return_values.append({"asset_details": dataset_details, "values": result})
+                except Exception as e:
+                    logger.error(f"Error getting values for dataset: {e}")
+                    values = [None] * no_of_assets
+                    return_values.append(
+                        {"asset_details": dataset_details, "values": values}
+                    )
+                    continue
+                result = geometry_type_to_function[geometry_type](
+                    datasource_array=dataset_array,
+                    assets=assets,
+                )
+                if extra_args and "expression" in extra_args:
+                    expression = extra_args.get("expression", None)
+                    result = [
+                        eval_expr(expression, value) if value is not None else None
+                        for value in result
+                    ]
+
+                return_values.append(
+                    {"asset_details": dataset_details, "values": result}
+                )
 
     return return_values
