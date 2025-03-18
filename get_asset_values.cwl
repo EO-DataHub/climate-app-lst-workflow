@@ -6,7 +6,10 @@ $graph:
     doc: >
       The Land Surface Temperature workflow will report on observed land surface temperature observations from your assets.
     requirements:
-      NetworkAccess:
+      - class: ResourceRequirement
+        coresMax: 4
+        ramMax: 4096
+      - class: NetworkAccess
         networkAccess: true
     inputs:
       assets:
