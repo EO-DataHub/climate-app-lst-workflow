@@ -85,7 +85,9 @@ def run_workflow(args: argparse.Namespace) -> None:
         logger.info("Getting values from STAC items")
 
         dve = DatasetsValueExtractor(
-            dataset_details_list=asset_data_list, assets=spatial_data
+            dataset_details_list=asset_data_list,
+            assets=spatial_data,
+            expression=args.expression,
         )
 
         # Add id to features if it does not exist

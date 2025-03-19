@@ -1,3 +1,6 @@
+import ast
+import operator
+
 import rasterio as rio
 import xarray as xr
 from aiohttp.client_exceptions import ClientResponseError
@@ -14,7 +17,12 @@ aws_session = AWSSession(aws_unsigned=True)
 
 
 class DatasetsValueExtractor:
-    def __init__(self, dataset_details_list: list[DatasetDetails], assets: AssetData):
+    def __init__(
+        self,
+        dataset_details_list: list[DatasetDetails],
+        assets: AssetData,
+        expression: str,
+    ):
         self.dataset_details_list = dataset_details_list
         self.assets = assets
         self.geometry_type_to_function = {
@@ -22,6 +30,7 @@ class DatasetsValueExtractor:
             "Polygon": ValueExtractor.get_values_polygons,
             "LineString": ValueExtractor.get_values_lines,
         }
+        self.expression = expression
 
     def get_values_for_multiple_variables(self, variables: list[str]) -> dict:
         for variable in variables:
@@ -33,7 +42,10 @@ class DatasetsValueExtractor:
 
     def get_min_max_values_for_dataset(self, dataset_details: DatasetDetails) -> None:
         lst_value_extractor = ValueExtractor(
-            dataset_details=dataset_details, assets=self.assets, variable="lst"
+            dataset_details=dataset_details,
+            assets=self.assets,
+            variable="lst",
+            expression="x-273.15",
         )
         lst_uncertainty_value_extractor = ValueExtractor(
             dataset_details=dataset_details,
@@ -79,7 +91,10 @@ class DatasetsValueExtractor:
         output_name_suffix: str = "",
     ) -> None:
         value_extractor = ValueExtractor(
-            dataset_details=dataset_details, assets=self.assets, variable=variable
+            dataset_details=dataset_details,
+            assets=self.assets,
+            variable=variable,
+            expression=self.expression,
         )
         results = value_extractor.get_values()
         self._update_asset_properties_caller(
@@ -126,6 +141,7 @@ class ValueExtractor:
         dataset_details: DatasetDetails,
         assets: AssetData,
         variable: str = None,
+        expression: str = None,
     ):
         self.dataset_details = dataset_details
         self.assets = assets
@@ -137,6 +153,7 @@ class ValueExtractor:
             "Polygon": "get_values_polygons",
             "LineString": "get_values_lines",
         }
+        self.expression = expression
 
     def get_values_points(self) -> list:
         logger.info("Getting values for points")
@@ -229,4 +246,50 @@ class ValueExtractor:
     def get_values(self) -> list:
         method_name = self.geometry_type_to_function[self.geometry_type]
         method = getattr(self, method_name)
-        return method()
+        result = method()
+        if self.expression:
+            result = [
+                eval_expr(self.expression, value) if value is not None else None
+                for value in result
+            ]
+        return result
+
+
+def eval_expr(expr, value):
+    """
+    Safely evaluate a mathematical expression with a given value.
+    """
+    operators = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Pow: operator.pow,
+        ast.BitXor: operator.xor,
+        ast.USub: operator.neg,
+    }
+
+    def _eval(node):
+        if isinstance(node, ast.Constant):  # <number>
+            return node.value
+        elif isinstance(node, ast.BinOp):  # <left> <operator> <right>
+            return operators[type(node.op)](_eval(node.left), _eval(node.right))
+        elif isinstance(node, ast.UnaryOp):  # <operator> <operand> e.g., -1
+            return operators[type(node.op)](_eval(node.operand))
+        elif isinstance(node, ast.Name):
+            if node.id == "x":
+                return value
+            else:
+                raise ValueError(f"Unsupported variable: {node.id}")
+        elif (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "round"
+        ):
+            args = [_eval(arg) for arg in node.args]
+            return round(*args)
+        else:
+            raise TypeError(node)
+
+    node = ast.parse(expr, mode="eval").body
+    return _eval(node)
