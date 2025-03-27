@@ -1,0 +1,19 @@
+{
+"type": "FeatureCollection",
+"name": "london_points",
+"features": [
+{ "type": "Feature", "properties": { "name": "Buckingham Palace", "description": "The official residence of the British monarch.", "area": "Westminster", "latitude": 51.50136, "longitude": -0.142 }, "geometry": { "type": "Point", "coordinates": [ -0.14189, 51.50136 ] } },
+{ "type": "Feature", "properties": { "name": "Tower of London", "description": "Historic castle housing the Crown Jewels.", "area": "Tower Hamlets", "latitude": 51.50811, "longitude": -0.076 }, "geometry": { "type": "Point", "coordinates": [ -0.07611, 51.50811 ] } },
+{ "type": "Feature", "properties": { "name": "British Museum", "description": "World-famous museum with a vast collection of artifacts.", "area": "Bloomsbury", "latitude": 51.51941, "longitude": -0.127 }, "geometry": { "type": "Point", "coordinates": [ -0.12695, 51.51941 ] } },
+{ "type": "Feature", "properties": { "name": "Big Ben & Houses of Parliament", "description": "Iconic clock tower and seat of the UK government.", "area": "Westminster", "latitude": 51.50073, "longitude": -0.125 }, "geometry": { "type": "Point", "coordinates": [ -0.12462, 51.50073 ] } },
+{ "type": "Feature", "properties": { "name": "London Eye", "description": "Giant Ferris wheel with panoramic views of London.", "area": "South Bank", "latitude": 51.50333, "longitude": -0.12 }, "geometry": { "type": "Point", "coordinates": [ -0.11954, 51.50333 ] } },
+{ "type": "Feature", "properties": { "name": "Natural History Museum", "description": "Famous museum showcasing natural wonders and dinosaurs.", "area": "South Kensington", "latitude": 51.49684, "longitude": -0.176 }, "geometry": { "type": "Point", "coordinates": [ -0.17637, 51.49684 ] } },
+{ "type": "Feature", "properties": { "name": "Alexandra Palace", "description": "Iconic entertainment venue with panoramic city views.", "area": "Haringey", "latitude": 51.59419, "longitude": -0.13 }, "geometry": { "type": "Point", "coordinates": [ -0.13028, 51.59419 ] } },
+{ "type": "Feature", "properties": { "name": "Hampton Court Palace", "description": "Historic royal palace of Henry VIII.", "area": "Richmond upon Thames", "latitude": 51.40383, "longitude": -0.337 }, "geometry": { "type": "Point", "coordinates": [ -0.33653, 51.40383 ] } },
+{ "type": "Feature", "properties": { "name": "Kew Gardens", "description": "World-famous botanical gardens and greenhouses.", "area": "Richmond upon Thames", "latitude": 51.47874, "longitude": -0.296 }, "geometry": { "type": "Point", "coordinates": [ -0.29561, 51.47874 ] } },
+{ "type": "Feature", "properties": { "name": "Wembley Stadium", "description": "The UK's largest stadium, hosting sports and concerts.", "area": "Brent", "latitude": 51.55595, "longitude": -0.28 }, "geometry": { "type": "Point", "coordinates": [ -0.27952, 51.55595 ] } },
+{ "type": "Feature", "properties": { "name": "Crystal Palace Park", "description": "Large park with dinosaur sculptures and a maze.", "area": "Bromley", "latitude": 51.42105, "longitude": -0.073 }, "geometry": { "type": "Point", "coordinates": [ -0.07341, 51.42105 ] } },
+{ "type": "Feature", "properties": { "name": "Greenwich Park", "description": "One of London's Royal Parks, home to the Prime Meridian.", "area": "Greenwich", "latitude": 51.47692, "longitude": -0.001 }, "geometry": { "type": "Point", "coordinates": [ -0.00147, 51.47692 ] } },
+{ "type": "Feature", "properties": { "name": "Brixton Market", "description": "Vibrant market offering diverse food and culture.", "area": "Lambeth", "latitude": 51.46286, "longitude": -0.114 }, "geometry": { "type": "Point", "coordinates": [ -0.11365, 51.46286 ] } }
+]
+}
