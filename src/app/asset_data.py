@@ -33,7 +33,8 @@ class AssetData:
         self.json_data, self.gdf = self.download()
         self.geometry_type = self.get_geometry_types()
         self.data, self.no_of_assets = self.get_assets_and_count()
-        self.crs = self.gdf.crs
+        if self.geometry_type != "Point":
+            self.crs = self.gdf.crs
 
     def get_assets_and_count(self):
         if self.geometry_type == "Point":

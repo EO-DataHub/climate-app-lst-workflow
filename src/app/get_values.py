@@ -66,12 +66,12 @@ class DatasetsValueExtractor:
         self._update_asset_properties_caller(
             dataset_details=dataset_details,
             results=min_values,
-            output_name_suffix="_min",
+            output_name_suffix="_minus_uncertainty",
         )
         self._update_asset_properties_caller(
             dataset_details=dataset_details,
             results=max_values,
-            output_name_suffix="_max",
+            output_name_suffix="_plus_uncertainty",
         )
 
     def get_values_for_datasets(
