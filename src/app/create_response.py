@@ -106,7 +106,7 @@ class WorkflowResponse:
         stem = Path(self.out_file).stem
         catalog = {
             "stac_version": "1.0.0",
-            "id": "lst_results",
+            "id": "",
             "type": "Catalog",
             "title": "LST Results",
             "description": "Root catalog",
