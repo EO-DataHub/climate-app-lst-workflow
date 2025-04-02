@@ -5,10 +5,12 @@ Main starting point for the workflow.
 
 import argparse
 
+from shortuuid import ShortUUID
+
 from app.asset_data import AssetData
 from app.create_response import ResponseStatus, WorkflowResponse
-from app.extra import string_to_json
-from app.get_values import get_values_for_multiple_datasets
+from app.extra import process_extra_args, string_to_json
+from app.get_values import DatasetsValueExtractor
 from app.get_values_logger import logger
 from app.search_stac import StacSearch
 from app.stac_parsing import get_asset_data_list
@@ -42,7 +44,11 @@ def parse_arguments():
 
     logger.info("Extra arguments: %s", args.extra_args)
 
-    args.extra_args = string_to_json(args.extra_args) if args.extra_args else None
+    extra_args = process_extra_args(args.extra_args)
+
+    for key, value in extra_args.items():
+        setattr(args, key, value)
+
     logger.info("Parsed extra arguments: %s", args.extra_args)
     args.stac_query = string_to_json(args.stac_query) if args.stac_query else None
 
@@ -77,19 +83,29 @@ def run_workflow(args: argparse.Namespace) -> None:
         asset_data_list = get_asset_data_list(stac_search.results)
 
         logger.info("Getting values from STAC items")
-        return_values = get_values_for_multiple_datasets(
+
+        dve = DatasetsValueExtractor(
             dataset_details_list=asset_data_list,
             assets=spatial_data,
-            extra_args=args.extra_args,
+            expression=args.expression,
         )
-        logger.info("Merging results into dict")
 
-        logger.debug("Returned values: %s", return_values)
+        # Add id to features if it does not exist
+        for feature in dve.assets.json_data["features"]:
+            if "id" not in feature["properties"]:
+                feature["properties"]["id"] = ShortUUID().random(length=8)
+            feature["properties"]["returned_values"] = {}
+
+        print(f"args.output_type: {args.output_type}")
+        print(f"args.variable: {args.variable}")
+        if args.output_type == "min_max":
+            dve.get_min_max_values()
+        else:
+            dve.get_values_for_datasets(variable=args.variable)
+
         WorkflowResponse(
-            return_values=return_values,
+            return_values=dve.assets.json_data,
             status=ResponseStatus.SUCCESS,
-            points_json=spatial_data.data,
-            extra_args=args.extra_args,
         )
 
 

@@ -3,6 +3,26 @@
         {
             "type": "debugpy",
             "request": "launch",
+            "name": "From frontend",
+            "program": "${workspaceFolder}/src/main.py",
+            "args": [
+                "--assets",
+                "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/uk_points_2.geojson",
+                "--stac_catalog",
+                "https://api.stac.ceda.ac.uk",
+                "--start_date",
+                "2024-07-01",
+                "--end_date",
+                "2024-07-31",
+                "--stac_collection",
+                "['eocis-lst-s3b-day', 'eocis-lst-s3a-day']",
+                "--extra_args",
+                "{'output_name': \"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\",'variable':'lst','unit':'°C','expression':'x - 273.15','output_type':'min_max'}"
+            ]
+        },
+        {
+            "type": "debugpy",
+            "request": "launch",
             "name": "Kerchunk",
             "program": "${workspaceFolder}/src/main.py",
             "args": [
@@ -18,6 +38,26 @@
                 "['eocis-lst-s3b-day', 'eocis-lst-s3a-day']",
                 "--extra_args",
                 "{'output_name':\"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\",'variable':'lst','unit':'°C','expression':'round(x - 273.15,2)'}"
+            ]
+        },
+        {
+            "type": "debugpy",
+            "request": "launch",
+            "name": "Kerchunk_min_max",
+            "program": "${workspaceFolder}/src/main.py",
+            "args": [
+                "--assets",
+                "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/uk_points_2.geojson",
+                "--stac_catalog",
+                "https://api.stac.ceda.ac.uk",
+                "--start_date",
+                "2024-07-01",
+                "--end_date",
+                "2024-07-31",
+                "--stac_collection",
+                "['eocis-lst-s3b-day', 'eocis-lst-s3a-day']",
+                "--extra_args",
+                "{'output_name':\"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\",'variable':'lst','unit':'°C','expression':'round(x - 273.15,2)','output_type':'min_max'}"
             ]
         },
         {
@@ -43,7 +83,7 @@
         {
             "type": "debugpy",
             "request": "launch",
-            "name": "Kerchunk Polygon",
+            "name": "Kerchunk Polygon min max",
             "program": "${workspaceFolder}/src/main.py",
             "args": [
                 "--assets",
@@ -57,7 +97,7 @@
                 "--stac_collection",
                 "['eocis-lst-s3b-night']",
                 "--extra_args",
-                "{'output_name':\"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\",'variable':'lst','unit':'°C','expression':'x - 273.15'}"
+                "{'output_name':\"{datetime_string[:-9]}_{file_name.split('_')[3].split('-')[0]}_S3{file_name.split('_')[1].split('-')[4][5]}\",'variable':'lst','unit':'°C','expression':'x - 273.15','output_type':'min_max'}"
             ]
         },
         {
@@ -133,12 +173,12 @@
             "program": "${workspaceFolder}/src/main.py",
             "name": "London LST",
             "args": [
-                "--assets", "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/points.geojson",
-                "--stac_catalog", "https://test.eodatahub.org.uk/api/catalogue/stac/catalogs/supported-datasets/temp-sparkgeouser/processing-results/cat_c1f6f668-b2f8-11ef-b6b1-ee3aaed8a789",
+                "--assets", "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/london_points.geojson",
+                "--stac_catalog", "https://staging.eodatahub.org.uk/api/catalogue/stac",
                 "--start_date", "2022-06-01",
-                "--end_date", "2022-06-30",
-                "--stac_collection", "col_c1f6f668-b2f8-11ef-b6b1-ee3aaed8a789",
-                "--extra_args", "{'output_name':\"{datetime_string}\"}"
+                "--end_date", "2023-06-30",
+                "--stac_collection", "esacci-lst-l2p-lndst8-london",
+                "--extra_args", "{'output_name':\"{datetime_string}\",'unit':'°C','variable':'lst','unit':'°C','expression':'x - 273.15'}"
 
             ]
         },

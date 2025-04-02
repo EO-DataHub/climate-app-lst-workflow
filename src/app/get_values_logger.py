@@ -3,6 +3,7 @@ Setup logging
 """
 
 import logging
+import sys
 
 logger = logging.getLogger("getvalues_logger")
 logger.setLevel(logging.INFO)
@@ -17,9 +18,10 @@ logger.addHandler(file_handler)
 
 # Check if a StreamHandler already exists
 if not any(isinstance(handler, logging.StreamHandler) for handler in logger.handlers):
-    stream_handler = logging.StreamHandler()
+    stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setFormatter(log_format)
     logger.addHandler(stream_handler)
+
 
 for handler in logger.handlers:
     handler.setFormatter(log_format)

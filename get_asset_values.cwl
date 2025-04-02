@@ -1,7 +1,7 @@
 cwlVersion: v1.2
 $graph:
   - class: Workflow
-    id: lst-filter
+    id: lst-min-max
     label: Land Surface Temperature (LST)
     doc: >
       The Land Surface Temperature workflow will report on observed land surface temperature observations from your assets.
@@ -57,7 +57,7 @@ $graph:
         NetworkAccess:
             networkAccess: true
         DockerRequirement:
-            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:parse_bucket
+            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:w_min_max_5
     baseCommand: main.py
     inputs:
         assets:

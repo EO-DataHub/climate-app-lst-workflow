@@ -69,10 +69,10 @@ class StacSearch:
             search_params = {"datetime": time_range, "filter": cq2_filter}
         if self.collections:
             search_params["collections"] = self.collections
-            print(f"Searching collection {self.collections}")
+            logger.info(f"Searching collection {self.collections}")
         if self.max_items:
             search_params["max_items"] = self.max_items
-        print(f"Searching catalog with parameters: {search_params}")
+        logger.info(f"Searching catalog with parameters: {search_params}")
         search = self.catalog.search(**search_params)
         return search
 
@@ -90,7 +90,7 @@ class StacSearch:
         results = []
         for item in self.search.items():
             results.append(item.get_self_href())
-            print(item.get_self_href())
+            logger.info(item.get_self_href())
         return results
 
     def query_to_filter(self) -> dict:
