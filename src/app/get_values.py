@@ -154,30 +154,71 @@ class ValueExtractor:
             "LineString": "get_values_lines",
         }
         self.expression = expression
+        if self.assets.crs != self.dataset_details.crs:
+            # Convert coordinates to the dataset's CRS
+            logger.info(
+                f"Converting coordinates from {self.assets.crs}"
+                f"to {self.dataset_details.crs}"
+            )
+            self.assets.to_crs(self.dataset_details.crs)
+
+    def _get_index_mapping(self, index_keys: list) -> dict:
+        """
+        Determines the appropriate index mapping for the dataset.
+
+        Args:
+            index_keys (list): The list of index keys in the dataset.
+
+        Returns:
+            dict: A mapping of dataset keys to asset keys
+            (e.g., {"lat": "y", "lon": "x"}).
+        """
+        if "lat" in index_keys and "lon" in index_keys:
+            logger.info("Using lat and lon as indexes")
+            return {"lat": "y", "lon": "x"}
+        elif "y" in index_keys and "x" in index_keys:
+            logger.info("Using y and x as indexes")
+            return {"lat": "y", "lon": "x"}
+        elif (
+            "projection_y_coordinate" in index_keys
+            and "projection_x_coordinate" in index_keys
+        ):
+            logger.info(
+                "Using projection_y_coordinate and projection_x_coordinate as indexes"
+            )
+            return {
+                "lat": "projection_y_coordinate",
+                "lon": "projection_x_coordinate",
+            }
+        else:
+            return None
 
     def get_values_points(self) -> list:
         logger.info("Getting values for points")
+        if self.dataset_details.crs != self.assets.crs:
+            # Convert coordinates to the dataset's CRS
+            logger.info(
+                f"Converting coordinates from {self.assets.crs}"
+                f" to {self.dataset_details.crs}"
+            )
+            self.assets.data = self.assets.data.to_crs(self.dataset_details.crs)
         try:
             with rio.Env(aws_session):
                 index_keys = list(self.dataset._indexes.keys())
                 logger.info(f"Index keys: {index_keys}")
-                if "lat" in index_keys and "lon" in index_keys:
-                    logger.info("Using lat and lon as indexes")
-                    values = self.dataset.sel(
-                        lat=self.assets.data.y,
-                        lon=self.assets.data.x,
-                        method="nearest",
-                    ).values.tolist()
-                elif "y" in index_keys and "x" in index_keys:
-                    logger.info("Using y and x as indexes")
-                    values = self.dataset.sel(
-                        x=self.assets.data.x,
-                        y=self.assets.data.y,
-                        method="nearest",
-                    ).values.tolist()
-                else:
+                index_mapping = self._get_index_mapping(index_keys)
+                if not index_mapping:
                     logger.error("Unsupported index keys")
-                    values = [None] * len(self.assets.x)
+                    return [None] * len(self.assets.data.x)
+
+                # Perform selection using the determined index keys
+                values = self.dataset.sel(
+                    **{
+                        index_mapping["lat"]: self.assets.data.y,
+                        index_mapping["lon"]: self.assets.data.x,
+                    },
+                    method="nearest",
+                ).values.tolist()
         except Exception as e:
             logger.error(f"Error extracting values from points: {e}")
             values = [None] * len(self.assets.data.x)

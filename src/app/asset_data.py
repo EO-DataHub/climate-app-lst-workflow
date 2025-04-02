@@ -5,6 +5,7 @@ import tempfile
 import boto3
 import geopandas as gpd
 import numpy as np
+import pandas as pd
 import requests
 import xarray as xr
 
@@ -33,12 +34,11 @@ class AssetData:
         self.json_data, self.gdf = self.download()
         self.geometry_type = self.get_geometry_types()
         self.data, self.no_of_assets = self.get_assets_and_count()
-        if self.geometry_type != "Point":
-            self.crs = self.gdf.crs
+        self.crs = self.gdf.crs if self.gdf.crs else "EPSG:4326"
 
     def get_assets_and_count(self):
         if self.geometry_type == "Point":
-            asset_data = self.point_to_xr_dataset()
+            asset_data = self.point_to_xr_dataset(self.json_data)
             no_of_assets = len(asset_data.x)
         else:
             asset_data = self.gdf
@@ -89,6 +89,7 @@ class AssetData:
                     temp_file.close()
                 except RuntimeError as e:
                     logger.error(e)
+            file_path = temp_file.name
             data = self.load_json_from_file(temp_file.name)
             gdf = gpd.read_file(temp_file.name)
         elif self.source.startswith("s3://"):
@@ -97,15 +98,51 @@ class AssetData:
             logger.info(f"Downloading key: {key} from bucket: {bucket_name}...")
             local_file = os.path.basename(key)
             s3.download_file(bucket_name, key, local_file)
+            file_path = local_file
             data = self.load_json_from_file(local_file)
             gdf = gpd.read_file(local_file)
         else:
-            data = self.load_json_from_file(self.source)
-            gdf = gpd.read_file(self.source)
+            file_path = self.source
+        # Check if the file is a CSV
+        if file_path.endswith(".csv"):
+            logger.info(f"Processing CSV file: {file_path}")
+            gdf = self.csv_to_geodataframe(file_path)
+            data = gdf.__geo_interface__  # Convert GeoDataFrame to GeoJSON-like dict
+        else:
+            data = self.load_json_from_file(file_path)
+            gdf = gpd.read_file(file_path)
 
         return data, gdf
 
-    def point_to_xr_dataset(self) -> xr.Dataset:
+    def csv_to_geodataframe(self, file_path: str) -> gpd.GeoDataFrame:
+        """
+        Converts a CSV file with latitude and longitude columns to a GeoDataFrame.
+
+        Args:
+            file_path (str): The path to the CSV file.
+
+        Returns:
+            gpd.GeoDataFrame: A GeoDataFrame with geometry created
+            from latitude and longitude.
+        """
+        logger.info(f"Converting CSV file {file_path} to GeoDataFrame")
+        try:
+            df = pd.read_csv(file_path)
+            if "latitude" not in df.columns or "longitude" not in df.columns:
+                raise ValueError(
+                    "CSV file must contain 'latitude' and 'longitude' columns."
+                )
+            gdf = gpd.GeoDataFrame(
+                df,
+                geometry=gpd.points_from_xy(df["longitude"], df["latitude"]),
+                crs="EPSG:4326",
+            )
+            return gdf
+        except Exception as e:
+            logger.error(f"Failed to convert CSV to GeoDataFrame: {e}")
+            raise RuntimeError(f"Error processing CSV file {file_path}") from e
+
+    def point_to_xr_dataset(self, geojson) -> xr.Dataset:
         """
         Converts points data to an xarray Dataset.
 
@@ -117,7 +154,7 @@ class AssetData:
         """
         logger.info("Converting points to xarray Dataset")
         try:
-            features = self.json_data["features"]
+            features = geojson["features"]
             latitudes = np.array(
                 [feature["geometry"]["coordinates"][1] for feature in features]
             )
@@ -154,3 +191,13 @@ class AssetData:
             if geometry_type:
                 geometry_types.append(geometry_type)
         return geometry_types
+
+    def to_crs(self, out_crs: str) -> gpd.GeoDataFrame:
+        logger.info(f"Reprojecting to {out_crs}")
+        self.gdf = self.gdf.to_crs(out_crs)
+        if self.geometry_type != "Point":
+            self.data = self.gdf
+        else:
+            new_json_data = self.gdf.__geo_interface__
+            self.data = self.point_to_xr_dataset(new_json_data)
+        self.crs = out_crs

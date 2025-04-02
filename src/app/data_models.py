@@ -13,6 +13,7 @@ class DatasetDetails(BaseModel):
     source_file_name: str
     unit: str | None
     output_name: str = None
+    crs: str = "EPSG:4326"
 
     def __init__(self, **data):
         super().__init__(**data)

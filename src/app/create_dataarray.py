@@ -16,6 +16,7 @@ class DatasetDataArray:
         self.crs = crs
         self.dataset_details = dataset_details
         self.file_type = self.determine_file_type()
+        self.time = 0
         self.ds = self.open_dataset()
 
     def determine_file_type(self) -> str:
@@ -62,13 +63,17 @@ class DatasetDataArray:
                     if self.variable:
                         ds = ds[self.variable]
                         ds = ds.squeeze()
+                        if self.time is not None:
+                            ds = ds.isel(time=self.time)
                 case "GeoTIFF":
                     logger.info("Opening GeoTIFF file")
                     ds = rxr.open_rasterio(url, mask_and_scale=True)
                 case _:
                     raise ValueError(f"Unsupported file type: {self.file_type}")
             ds.attrs["file_path"] = url
-            if self.crs:
+            if ds.rio.crs:
+                self.crs = ds.rio.crs
+            elif self.crs:
                 ds.rio.write_crs(self.crs, inplace=True)
             else:
                 if not ds.rio.crs:
