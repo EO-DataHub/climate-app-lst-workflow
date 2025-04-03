@@ -1,6 +1,7 @@
 import ast
 import operator
 
+import numpy as np
 import rasterio as rio
 import xarray as xr
 from aiohttp.client_exceptions import ClientResponseError
@@ -66,12 +67,12 @@ class DatasetsValueExtractor:
         self._update_asset_properties_caller(
             dataset_details=dataset_details,
             results=min_values,
-            output_name_suffix="_min",
+            output_name_suffix="_minus_uncertainty",
         )
         self._update_asset_properties_caller(
             dataset_details=dataset_details,
             results=max_values,
-            output_name_suffix="_max",
+            output_name_suffix="_plus_uncertainty",
         )
 
     def get_values_for_datasets(
@@ -106,6 +107,8 @@ class DatasetsValueExtractor:
     def _update_asset_properties_caller(
         self, results: list, dataset_details: DatasetDetails, output_name_suffix: str
     ) -> None:
+        if self.assets.geometry_type != "Point":
+            output_name_suffix = f"{output_name_suffix}_average"
         for index, result in enumerate(results):
             self._update_asset_properties(
                 index=index,
@@ -131,8 +134,40 @@ class DatasetsValueExtractor:
                 "datetime": dataset_details.datetime.isoformat(),
                 "unit": dataset_details.unit,
                 "file_name": dataset_details.source_file_name,
+                "key": output_name,
             }
         )
+
+    def add_summary_statistics(self):
+        for feature in self.assets.json_data["features"]:
+            returned_values = feature["properties"]["returned_values"]
+            values = [
+                v["value"] for v in returned_values.values() if v["value"] is not None
+            ]
+
+            if values:
+                # Compute statistics
+                stats = {
+                    "MINIMUM": float(min(values)),
+                    "MAXIMUM": float(max(values)),
+                    "MEAN": float(np.mean(values)),
+                    "STANDARD_DEVIATION": float(np.std(values)),
+                }
+            else:
+                stats = {
+                    "MINIMUM": None,
+                    "MAXIMUM": None,
+                    "MEAN": None,
+                    "STANDARD_DEVIATION": None,
+                }
+
+            # Add statistics to returned_values
+            for stat_name, stat_value in stats.items():
+                returned_values[stat_name] = {
+                    "value": stat_value,
+                    "type": "statistic",
+                    "key": stat_name,
+                }
 
 
 class ValueExtractor:

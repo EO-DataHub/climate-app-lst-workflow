@@ -103,6 +103,9 @@ def run_workflow(args: argparse.Namespace) -> None:
         else:
             dve.get_values_for_datasets(variable=args.variable)
 
+        # Add summary statistics to the features
+        dve.add_summary_statistics()
+
         WorkflowResponse(
             return_values=dve.assets.json_data,
             status=ResponseStatus.SUCCESS,

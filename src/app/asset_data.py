@@ -1,10 +1,11 @@
 import json
-import os
 import tempfile
+from pathlib import Path
 
 import boto3
 import geopandas as gpd
 import numpy as np
+import pandas as pd
 import requests
 import xarray as xr
 
@@ -33,7 +34,7 @@ class AssetData:
         self.json_data, self.gdf = self.download()
         self.geometry_type = self.get_geometry_types()
         self.data, self.no_of_assets = self.get_assets_and_count()
-        self.crs = self.gdf.crs
+        self.crs = self.gdf.crs if self.gdf.crs else "EPSG:4326"
 
     def get_assets_and_count(self):
         if self.geometry_type == "Point":
@@ -73,36 +74,120 @@ class AssetData:
         Download a spatial file from an HTTP URL or an
         S3 bucket and load its JSON content.
 
-        Args:
-
         Returns:
             dict: The JSON content loaded from the downloaded file.
         """
-        if self.source.startswith("https://") or self.source.startswith("http://"):
-            logger.info(f"Downloading {self.source} using http...")
-            response = requests.get(self.source)
-            with tempfile.NamedTemporaryFile(mode="w", delete=False) as temp_file:
-                try:
-                    logger.info("Downloading file")
-                    temp_file.write(response.text)
-                    temp_file.close()
-                except RuntimeError as e:
-                    logger.error(e)
-            data = self.load_json_from_file(temp_file.name)
-            gdf = gpd.read_file(temp_file.name)
-        elif self.source.startswith("s3://"):
-            s3 = boto3.client("s3")
-            bucket_name, key = extract_bucket_and_key_from_s3_url(self.source)
-            logger.info(f"Downloading key: {key} from bucket: {bucket_name}...")
-            local_file = os.path.basename(key)
-            s3.download_file(bucket_name, key, local_file)
-            data = self.load_json_from_file(local_file)
-            gdf = gpd.read_file(local_file)
-        else:
-            data = self.load_json_from_file(self.source)
-            gdf = gpd.read_file(self.source)
+        file_path = self._download_file()
+        return self._process_file(file_path)
 
+    def _download_file(self) -> Path:
+        """
+        Downloads the file from the source URL or S3 bucket.
+
+        Returns:
+            Path: The path to the downloaded file.
+        """
+        if self.source.startswith(("https://", "http://")):
+            return self._download_from_http()
+        elif self.source.startswith("s3://"):
+            return self._download_from_s3()
+        else:
+            return Path(self.source)
+
+    def _download_from_http(self) -> Path:
+        """
+        Downloads a file from an HTTP/HTTPS URL.
+
+        Returns:
+            Path: The path to the downloaded file.
+        """
+        logger.info(f"Downloading {self.source} using HTTP...")
+        response = requests.get(self.source)
+        response.raise_for_status()  # Raise an error for HTTP issues
+        file_extension = Path(self.source).suffix
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=file_extension, delete=False
+        ) as temp_file:
+            logger.info("Writing downloaded file to temporary location")
+            temp_file.write(response.text)
+            temp_file.close()
+        return Path(temp_file.name)
+
+    def _download_from_s3(self) -> Path:
+        """
+        Downloads a file from an S3 bucket.
+
+        Returns:
+            Path: The path to the downloaded file.
+        """
+        s3 = boto3.client("s3")
+        bucket_name, key = extract_bucket_and_key_from_s3_url(self.source)
+        logger.info(f"Downloading key: {key} from bucket: {bucket_name}...")
+        local_file = Path(key).name
+        s3.download_file(bucket_name, key, local_file)
+        return Path(local_file)
+
+    def _process_file(self, file_path: Path) -> tuple:
+        """
+        Processes the downloaded file based on its extension.
+
+        Args:
+            file_path (Path): The path to the downloaded file.
+
+        Returns:
+            tuple: A tuple containing the JSON data and GeoDataFrame.
+        """
+        if file_path.suffix in [".geojson", ".json"]:
+            logger.info(f"Processing GeoJSON/JSON file: {file_path}")
+            data = self.load_json_from_file(file_path.as_posix())
+            gdf = gpd.read_file(file_path.as_posix())
+        elif file_path.suffix == ".csv":
+            with open(file_path, encoding="utf-8") as f:
+                first_line = f.readline().strip()
+                if first_line.startswith("{") and first_line.endswith("}"):
+                    logger.info(
+                        "Detected JSON-like content in CSV file. Parsing as JSON."
+                    )
+                    data = self.load_json_from_file(file_path.as_posix())
+                    gdf = gpd.GeoDataFrame.from_features(data["features"])
+                else:
+                    logger.info(f"Processing CSV file: {file_path}")
+                    gdf = self.csv_to_geodataframe(file_path.as_posix())
+                    data = (
+                        gdf.__geo_interface__
+                    )  # Convert GeoDataFrame to GeoJSON-like dict
+        else:
+            logger.error(f"Unsupported file type: {file_path.suffix}")
+            raise ValueError(f"Unsupported file type: {file_path.suffix}")
         return data, gdf
+
+    def csv_to_geodataframe(self, file_path: str) -> gpd.GeoDataFrame:
+        """
+        Converts a CSV file with latitude and longitude columns to a GeoDataFrame.
+
+        Args:
+            file_path (str): The path to the CSV file.
+
+        Returns:
+            gpd.GeoDataFrame: A GeoDataFrame with geometry created
+            from latitude and longitude.
+        """
+        logger.info(f"Converting CSV file {file_path} to GeoDataFrame")
+        try:
+            df = pd.read_csv(file_path)
+            if "latitude" not in df.columns or "longitude" not in df.columns:
+                raise ValueError(
+                    "CSV file must contain 'latitude' and 'longitude' columns."
+                )
+            gdf = gpd.GeoDataFrame(
+                df,
+                geometry=gpd.points_from_xy(df["longitude"], df["latitude"]),
+                crs="EPSG:4326",
+            )
+            return gdf
+        except Exception as e:
+            logger.error(f"Failed to convert CSV to GeoDataFrame: {e}")
+            raise RuntimeError(f"Error processing CSV file {file_path}") from e
 
     def point_to_xr_dataset(self) -> xr.Dataset:
         """
