@@ -142,9 +142,20 @@ class AssetData:
             data = self.load_json_from_file(file_path.as_posix())
             gdf = gpd.read_file(file_path.as_posix())
         elif file_path.suffix == ".csv":
-            logger.info(f"Processing CSV file: {file_path}")
-            gdf = self.csv_to_geodataframe(file_path.as_posix())
-            data = gdf.__geo_interface__  # Convert GeoDataFrame to GeoJSON-like dict
+            with open(file_path, encoding="utf-8") as f:
+                first_line = f.readline().strip()
+                if first_line.startswith("{") and first_line.endswith("}"):
+                    logger.info(
+                        "Detected JSON-like content in CSV file. Parsing as JSON."
+                    )
+                    data = self.load_json_from_file(file_path.as_posix())
+                    gdf = gpd.GeoDataFrame.from_features(data["features"])
+                else:
+                    logger.info(f"Processing CSV file: {file_path}")
+                    gdf = self.csv_to_geodataframe(file_path.as_posix())
+                    data = (
+                        gdf.__geo_interface__
+                    )  # Convert GeoDataFrame to GeoJSON-like dict
         else:
             logger.error(f"Unsupported file type: {file_path.suffix}")
             raise ValueError(f"Unsupported file type: {file_path.suffix}")

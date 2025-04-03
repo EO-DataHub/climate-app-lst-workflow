@@ -1,6 +1,6 @@
-name,population,area_sq_km,latitude,longitude,historical,visitor_count_per_year
-London,"8982000",1572,51.507,-0.128,,
-Stonehenge,,,51.179,-1.826,true,"1200000"
-Edinburgh,"506520",264,55.953,-3.188,,
-Manchester,"553230",115.6,53.481,-2.243,,
-Swansea,"246466",378,51.582,-3.935,,
+id,name,population,area_sq_km,latitude,longitude,historical,visitor_count_per_year
+0,London,"8982000",1572,51.507,-0.128,,
+1,Stonehenge,,,51.179,-1.826,true,"1200000"
+2,Edinburgh,"506520",264,55.953,-3.188,,
+3,Manchester,"553230",115.6,53.481,-2.243,,
+4,Swansea,"246466",378,51.582,-3.935,,
