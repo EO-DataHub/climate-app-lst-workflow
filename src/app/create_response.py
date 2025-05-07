@@ -9,6 +9,10 @@ import geopandas as gpd
 
 from app.get_values_logger import logger
 
+# Create output directory if it doesn't exist
+OUTPUT_DIR = "output"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 
 class ResponseStatus:
     SUCCESS = "success"
@@ -23,11 +27,11 @@ class WorkflowResponse:
         self.error_msg = error_msg
         if self.status == ResponseStatus.ERROR:
             self.process_response = {}
-            self.out_file = "./error.txt"
+            self.out_file = os.path.join(OUTPUT_DIR, "error.txt")
             self.create_error_response()
         else:
             self.process_response = return_values
-            self.out_file = "./data.csv"
+            self.out_file = os.path.join(OUTPUT_DIR, "data.csv")
             self.to_csv()
 
         self.stac_item = self.createStacItem()
@@ -112,8 +116,13 @@ class WorkflowResponse:
         Write the STAC item and catalog root to their respective JSON files.
         """
         try:
-            json_to_file(self.stac_item, f"{Path(self.out_file).stem}.json")
-            json_to_file(self.stac_catalog_root, "./catalog.json")
+            json_to_file(
+                self.stac_item,
+                os.path.join(OUTPUT_DIR, f"{Path(self.out_file).stem}.json"),
+            )
+            json_to_file(
+                self.stac_catalog_root, os.path.join(OUTPUT_DIR, "catalog.json")
+            )
         except Exception as e:
             logger.error(f"Error writing STAC files: {e}")
 
@@ -136,7 +145,7 @@ class WorkflowResponse:
 
         gdf = gdf.apply(extract_datetime_values, axis=1)
         gdf.drop(columns=["returned_values", "geometry"], inplace=True)
-        csv_filename = "./data.csv"
+        csv_filename = os.path.join(OUTPUT_DIR, "data.csv")
         gdf.to_csv(csv_filename, index=False)
 
     def create_error_response(self) -> dict:

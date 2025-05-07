@@ -1,14 +1,14 @@
 cwlVersion: v1.2
 $graph:
   - class: Workflow
-    id: lst-min-max
+    id: lst-min-max_2
     label: Land Surface Temperature (LST)
     doc: >
       The Land Surface Temperature workflow will report on observed land surface temperature observations from your assets.
     requirements:
       - class: ResourceRequirement
-        coresMax: 4
-        ramMax: 4096
+        coresMax: 2
+        ramMax: 2048
       - class: NetworkAccess
         networkAccess: true
     inputs:
@@ -31,8 +31,11 @@ $graph:
         type: string?
         doc: 
       extra_args:
-        type: string?
-        doc: Arguments to pass to the data loader
+        type:
+          - "null"
+          - type: record
+            fields: []
+        doc: JSON object with additional arguments to pass to the data loader
     outputs:
       - id: asset-result
         type: Directory
@@ -57,7 +60,16 @@ $graph:
         NetworkAccess:
             networkAccess: true
         DockerRequirement:
-            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:stats_09
+            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:stats_06
+        InitialWorkDirRequirement:
+            listing:
+              - entryname: output
+                entry: |
+                  {
+                    "type": "Directory",
+                    "basename": "output",
+                    "listing": []
+                  }
     baseCommand: main.py
     inputs:
         assets:
@@ -97,13 +109,17 @@ $graph:
                 separate: false
                 position: 5
         extra_args:
-            type: string?
+            type:
+              - "null"
+              - type: record
+                fields: []
             inputBinding:
                 prefix: --extra_args=
                 separate: false
                 position: 6
+                valueFrom: $(JSON.stringify(self))
     outputs:
         asset-result:
             type: Directory
             outputBinding:
-                glob: .
+                glob: output
