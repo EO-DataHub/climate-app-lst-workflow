@@ -41,20 +41,29 @@ def parse_string_to_list(input_string):
     return input_string
 
 
-def process_extra_args(extra_args: str) -> None:
+def process_extra_args(extra_args: str | dict | None) -> dict:
     """
     Processes extra arguments and sets environment variables.
 
     Args:
-        extra_args (str): A JSON string containing extra arguments.
+        extra_args (str | dict | None): A JSON string or
+        dictionary containing extra arguments.
+
+    Returns:
+        dict: Dictionary containing processed extra arguments.
     """
-    extra_args = string_to_json(extra_args) if extra_args else None
-    variable = extra_args.get("variable", None)
-    crs = extra_args.get("crs", None)
-    unit = extra_args.get("unit", None)
-    output_name = extra_args.get("output_name", None)
-    expression = extra_args.get("expression", None)
-    output_type = extra_args.get("output_type", None)
+    if isinstance(extra_args, dict):
+        args_dict = extra_args
+    else:
+        args_dict = string_to_json(extra_args) if extra_args else {}
+
+    variable = args_dict.get("variable", None)
+    crs = args_dict.get("crs", None)
+    unit = args_dict.get("unit", None)
+    output_name = args_dict.get("output_name", None)
+    expression = args_dict.get("expression", None)
+    output_type = args_dict.get("output_type", None)
+
     # Set environment variables
     if output_name:
         os.environ["OUTPUT_NAME_TEMPLATE"] = output_name

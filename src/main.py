@@ -51,7 +51,10 @@ def parse_arguments() -> argparse.Namespace:
         "--max_items", type=int, help="Maximum number of items to return", default=None
     )
     parser.add_argument(
-        "--extra_args", type=str, help="Extra arguments for the workflow", default=None
+        "--extra_args",
+        type=str,
+        help="Extra arguments for the workflow as a JSON string or object",
+        default=None,
     )
     parser.add_argument(
         "--output_type",
@@ -72,7 +75,8 @@ def parse_arguments() -> argparse.Namespace:
     logger.info("Processing extra arguments")
     extra_args = process_extra_args(args.extra_args)
     for key, value in extra_args.items():
-        setattr(args, key, value)
+        if value is not None:  # Only set non-None values
+            setattr(args, key, value)
 
     args.stac_query = string_to_json(args.stac_query) if args.stac_query else None
     return args
