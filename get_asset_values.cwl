@@ -58,6 +58,15 @@ $graph:
             networkAccess: true
         DockerRequirement:
             dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:stats_09
+        InitialWorkDirRequirement:
+            listing:
+              - entryname: output
+                entry: |
+                  {
+                    "type": "Directory",
+                    "basename": "output",
+                    "listing": []
+                  }
     baseCommand: main.py
     inputs:
         assets:
@@ -106,4 +115,4 @@ $graph:
         asset-result:
             type: Directory
             outputBinding:
-                glob: .
+                glob: output
