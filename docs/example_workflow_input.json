@@ -1,0 +1,8 @@
+{
+    "assets": "https://lst-cogs.s3.eu-west-1.amazonaws.com/test_data/uk_retail_40items_4326.geojson",
+    "stac_catalog": "https://api.stac.ceda.ac.uk/",
+    "start_date": "2024-07-01",
+    "end_date": "2024-07-02",
+    "stac_collection": "eocis-lst-s3b-day,eocis-lst-s3a-day",
+    "extra_args": "{\"output_name\": \"{datetime_string[:-9]}_{file_name.split(\\\"_\\\")[3].split(\\\"-\\\")[0]}_S3{file_name.split(\\\"_\\\")[1].split(\\\"-\\\")[4][5]}\", \"variable\": \"lst\", \"expression\": \"x - 273.15\", \"output_type\": \"min_max\"}"
+}

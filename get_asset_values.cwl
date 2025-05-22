@@ -57,7 +57,7 @@ $graph:
         NetworkAccess:
             networkAccess: true
         DockerRequirement:
-            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:stats_02
+            dockerPull: public.ecr.aws/z0u8g6n1/get_asset_values:strinput_01
     baseCommand: main.py
     inputs:
         assets:
